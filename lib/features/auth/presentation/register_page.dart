@@ -150,6 +150,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   )
                       : const Text("Ro'yxatdan o'tish"),
                 ),
+                const SizedBox(height: 12),
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.go(AppRoutes.gate),
+                    child: const Text(
+                      "Mehmon sifatida davom etish",
+                      style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.dark),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

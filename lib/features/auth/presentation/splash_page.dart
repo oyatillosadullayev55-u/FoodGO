@@ -78,7 +78,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               ),
               const SizedBox(height: 18),
               const Text(
-                'Yandex Go',
+                'FoodGo',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
@@ -94,7 +94,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
-                  'YANDEX EDA · FOODGO',
+                  'FOODGO DELIVERY',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,

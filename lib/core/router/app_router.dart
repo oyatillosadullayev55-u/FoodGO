@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/admin_home_page.dart';
 import '../../features/auth/presentation/login_page.dart';
+import '../../features/restaurant/restaurant_home_page.dart';
 import '../../features/auth/presentation/onboarding_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/auth/presentation/role_gate_page.dart';
@@ -120,11 +122,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.restaurantHome,
-      builder: (_, _) => const RolePlaceholder('Restoran'),
+      builder: (_, _) => const RestaurantHomePage(),
     ),
     GoRoute(
       path: AppRoutes.adminHome,
-      builder: (_, _) => const RolePlaceholder('Admin'),
+      builder: (_, _) => const AdminHomePage(),
     ),
   ],
 );

@@ -18,7 +18,7 @@ class ProfilePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil & Yandex ID', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Profil & FoodGo ID', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
       body: profile.when(
         loading: () => const Center(
@@ -31,7 +31,7 @@ class ProfilePage extends ConsumerWidget {
         data: (p) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            // 1. Yandex ID Foydalanuvchi ma'lumotlari
+            // 1. FoodGo ID Foydalanuvchi ma'lumotlari
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -136,7 +136,7 @@ class ProfilePage extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           const Text(
-                            'Yandex Plus',
+                            'FoodGo Club',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -173,7 +173,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Ballarni Yandex Eats va Yandex Go buyurtmalarida sarflang (1 ball = 1 so\'m)',
+                    'Ballarni FoodGo buyurtmalarida sarflang (1 ball = 1 so\'m)',
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
@@ -193,7 +193,7 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 _MenuItem(
                   icon: Icons.account_balance_wallet_rounded,
-                  title: 'To\'lov usullari & Yandex Pay',
+                  title: 'To\'lov usullari & FoodGo Pay',
                   subtitle: 'Bank kartalarini boshqarish',
                   onTap: () {},
                 ),
@@ -225,7 +225,7 @@ class ProfilePage extends ConsumerWidget {
                 _MenuItem(
                   icon: Icons.info_outline_rounded,
                   title: 'Ilova haqida',
-                  subtitle: 'FoodGo · Yandex style v1.0.0',
+                  subtitle: 'FoodGo v1.0.0',
                   onTap: () {},
                 ),
               ],

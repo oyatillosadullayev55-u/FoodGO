@@ -48,6 +48,65 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  void _showForgotPasswordDialog() {
+    final emailController = TextEditingController(text: _email.text);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Parolni tiklash'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Email manzilingizni kiriting. Biz sizga parolni tiklash havolasini yuboramiz.',
+              style: TextStyle(fontSize: 14, color: AppColors.grey),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                hintText: 'Email manzil',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Bekor qilish'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = emailController.text.trim();
+              if (email.isEmpty) return;
+              Navigator.pop(context);
+              try {
+                await ref.read(authRepositoryProvider).resetPassword(email);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Parolni tiklash havolasi emailingizga yuborildi'),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(friendlyError(e))),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Yuborish'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +149,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: Column(
                       children: [
                         Text(
-                          'Yandex ID',
+                          'FoodGo ID',
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 28,
@@ -99,7 +158,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'Yagona hisobingizga kiring',
+                          'Hisobingizga kiring',
                           style: TextStyle(color: AppColors.grey, fontSize: 14),
                         ),
                       ],
@@ -134,7 +193,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     validator: Validators.password,
                   ),
-                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      child: const Text(
+                        'Parolni unutdingizmi?',
+                        style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: _loading ? null : _submit,
                     style: ElevatedButton.styleFrom(
@@ -174,6 +243,61 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.primary, width: 1),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          '⚡ Test uchun tezkor kirish (Rollar):',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => context.go(AppRoutes.adminHome),
+                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.dark, foregroundColor: Colors.white),
+                                child: const Text('👑 Admin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => context.go(AppRoutes.restaurantHome),
+                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.dark),
+                                child: const Text('🍔 Hamkor', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => context.go(AppRoutes.customerHome),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.dark),
+                                child: const Text('👤 Mijoz', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.go(AppRoutes.gate),
+                      child: const Text(
+                        "Mehmon sifatida davom etish",
+                        style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.dark),
+                      ),
+                    ),
                   ),
                 ],
               ),
