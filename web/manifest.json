@@ -1,12 +1,12 @@
 {
-    "name": "foodgo",
-    "short_name": "foodgo",
+    "name": "FoodGo — tez yetkazib berish",
+    "short_name": "FoodGo",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FCE000",
+    "theme_color": "#FCE000",
+    "description": "Toshkentdagi restoranlardan taomlarni 20-30 daqiqada yetkazib berish xizmati.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

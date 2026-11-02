@@ -6,6 +6,7 @@ import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../providers/auth_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _password = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
+  bool _showLoginForm = false;
 
   @override
   void dispose() {
@@ -48,260 +50,295 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  void _showForgotPasswordDialog() {
-    final emailController = TextEditingController(text: _email.text);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Parolni tiklash'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Email manzilingizni kiriting. Biz sizga parolni tiklash havolasini yuboramiz.',
-              style: TextStyle(fontSize: 14, color: AppColors.grey),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                hintText: 'Email manzil',
-                prefixIcon: Icon(Icons.email_outlined),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Bekor qilish'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final email = emailController.text.trim();
-              if (email.isEmpty) return;
-              Navigator.pop(context);
-              try {
-                await ref.read(authRepositoryProvider).resetPassword(email);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Parolni tiklash havolasi emailingizga yuborildi'),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(friendlyError(e))),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Yuborish'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Form(
-              key: _formKey,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: ContentFrame(
+              maxWidth: 480,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Yandex ID Ikonkasi
-                  Center(
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
+                  // Logo
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.delivery_dining_rounded,
+                        color: AppColors.dark,
+                        size: 46,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'FoodGo',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Xush kelibsiz! Qaysi rolda davom etasiz?',
+                    style: TextStyle(color: AppColors.grey, fontSize: 14.5),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // 1-Rol: MIJOZ (Customer)
+                  _RoleCard(
+                    icon: Icons.person_rounded,
+                    title: 'Mijoz rejimi',
+                    subtitle: 'Restoranlar menyusini ko\'rish, taom tanlash va buyurtma berish',
+                    badge: 'ASOSIY',
+                    color: AppColors.primary,
+                    iconColor: AppColors.dark,
+                    textColor: AppColors.dark,
+                    onTap: () => context.go(AppRoutes.customerHome),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 2-Rol: OWNER (Restoran egasi)
+                  _RoleCard(
+                    icon: Icons.storefront_rounded,
+                    title: 'Owner (Restoran Egasi)',
+                    subtitle: 'Taomlar menyusi, yangi mahsulot qo\'shish va buyurtmalar holati',
+                    badge: 'BOSHQARUV',
+                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    iconColor: AppColors.primaryDark,
+                    textColor: isDark ? Colors.white : AppColors.dark,
+                    border: Border.all(color: isDark ? Colors.white12 : AppColors.borderLight, width: 1.2),
+                    onTap: () => context.go(AppRoutes.restaurantHome),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 3-Rol: ADMIN (Administrator)
+                  _RoleCard(
+                    icon: Icons.admin_panel_settings_rounded,
+                    title: 'Tizim Administratori (Admin)',
+                    subtitle: 'Hamkor restoranlar, statistika va umumiy tizimni nazorat qilish',
+                    badge: 'ADMIN',
+                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    iconColor: const Color(0xFF6A11CB),
+                    textColor: isDark ? Colors.white : AppColors.dark,
+                    border: Border.all(color: isDark ? Colors.white12 : AppColors.borderLight, width: 1.2),
+                    onTap: () => context.go(AppRoutes.adminHome),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Qo'shimcha: Email orqali kirish (ixtiyoriy)
+                  InkWell(
+                    onTap: () => setState(() => _showLoginForm = !_showLoginForm),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _showLoginForm ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                            size: 20,
+                            color: AppColors.grey,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _showLoginForm ? 'Email orqali kirishni yopish' : 'Email va parol orqali kirish (ixtiyoriy)',
+                            style: const TextStyle(
+                              color: AppColors.grey,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.delivery_dining_rounded,
-                          color: AppColors.dark,
-                          size: 42,
-                        ),
-                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'FoodGo ID',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 28,
-                                letterSpacing: -0.5,
-                              ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Hisobingizga kiring',
-                          style: TextStyle(color: AppColors.grey, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(
-                      hintText: 'Email manzil',
-                      prefixIcon: Icon(Icons.email_outlined, color: AppColors.dark),
-                    ),
-                    validator: Validators.email,
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _password,
-                    obscureText: _obscure,
-                    autofillHints: const [AutofillHints.password],
-                    decoration: InputDecoration(
-                      hintText: 'Parol',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.dark),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                          color: AppColors.grey,
-                        ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
-                    ),
-                    validator: Validators.password,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _showForgotPasswordDialog,
-                      child: const Text(
-                        'Parolni unutdingizmi?',
-                        style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.w600, fontSize: 13),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: _loading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.dark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: _loading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: AppColors.dark,
+
+                  if (_showLoginForm) ...[
+                    const SizedBox(height: 16),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _email,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              hintText: 'Email manzil',
+                              prefixIcon: Icon(Icons.email_outlined, color: AppColors.dark),
                             ),
-                          )
-                        : const Text(
-                            'Kirish',
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                            validator: Validators.email,
                           ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Hisobingiz yo'qmi?",
-                        style: TextStyle(color: AppColors.grey),
-                      ),
-                      TextButton(
-                        onPressed: () => context.go(AppRoutes.register),
-                        child: const Text(
-                          "Ro'yxatdan o'tish",
-                          style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.dark),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primary, width: 1),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          '⚡ Test uchun tezkor kirish (Rollar):',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => context.go(AppRoutes.adminHome),
-                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.dark, foregroundColor: Colors.white),
-                                child: const Text('👑 Admin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _password,
+                            obscureText: _obscure,
+                            decoration: InputDecoration(
+                              hintText: 'Parol',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.dark),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                                  color: AppColors.grey,
+                                ),
+                                onPressed: () => setState(() => _obscure = !_obscure),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => context.go(AppRoutes.restaurantHome),
-                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.dark),
-                                child: const Text('🍔 Hamkor', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-                              ),
+                            validator: Validators.password,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _loading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.dark,
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => context.go(AppRoutes.customerHome),
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.dark),
-                                child: const Text('👤 Mijoz', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.go(AppRoutes.gate),
-                      child: const Text(
-                        "Mehmon sifatida davom etish",
-                        style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.dark),
+                            child: _loading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.dark),
+                                  )
+                                : const Text('Hisobga kirish'),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleCard extends StatelessWidget {
+  const _RoleCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.color,
+    required this.iconColor,
+    required this.textColor,
+    required this.onTap,
+    this.border,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color color;
+  final Color iconColor;
+  final Color textColor;
+  final VoidCallback onTap;
+  final BoxBorder? border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        border: border,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+                  ],
+                ),
+                child: Icon(icon, color: iconColor, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.dark.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            badge,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor.withValues(alpha: 0.75),
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios_rounded, size: 16, color: textColor.withValues(alpha: 0.6)),
+            ],
           ),
         ),
       ),

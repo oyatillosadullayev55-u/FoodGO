@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../models/product.dart';
@@ -56,14 +57,19 @@ class ProductTile extends ConsumerWidget {
               child: SizedBox(
                 width: 88,
                 height: 88,
-                child: product.imageUrl == null
-                    ? const _Placeholder()
-                    : CachedNetworkImage(
-                        imageUrl: product.imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _) => const _Placeholder(),
-                        errorWidget: (_, _, _) => const _Placeholder(),
-                      ),
+                child: CachedNetworkImage(
+                  imageUrl: FoodImages.getProductImage(
+                    product.name,
+                    product.categoryName,
+                    product.imageUrl,
+                  ),
+                  fit: BoxFit.cover,
+                  placeholder: (_, _) => Container(color: AppColors.primarySoft),
+                  errorWidget: (_, _, _) => Image.network(
+                    FoodImages.national,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -167,20 +173,6 @@ class ProductTile extends ConsumerWidget {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Placeholder extends StatelessWidget {
-  const _Placeholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.primarySoft,
-      child: const Center(
-        child: Icon(Icons.fastfood_rounded, color: AppColors.primaryDark, size: 28),
       ),
     );
   }

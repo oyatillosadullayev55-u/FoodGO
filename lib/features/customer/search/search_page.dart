@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../home/home_providers.dart';
@@ -64,9 +65,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       appBar: AppBar(
         title: const Text('Qidiruv', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
-      body: Column(
+      body: ContentFrame(
+        maxWidth: 860,
+        child: Column(
         children: [
-          // Yandex uslubidagi qidiruv maydoni
+          // Zamonaviy qidiruv maydoni
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: Container(
@@ -176,6 +179,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

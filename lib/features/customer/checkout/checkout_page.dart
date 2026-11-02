@@ -10,6 +10,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../cart/cart_provider.dart';
@@ -29,7 +30,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _note = TextEditingController();
   bool _loading = false;
   bool _leaveAtDoor = false;
-  int _selectedPaymentMethod = 0; // 0: Naqd pul, 1: Yandex Pay, 2: Karta
+  int _selectedPaymentMethod = 0; // 0: Naqd pul, 1: FoodGo Pay, 2: Karta
 
   late final String _idempotencyKey = _newKey();
 
@@ -119,12 +120,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
+      body: ContentFrame(
+        child: Form(
+          key: _formKey,
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
           children: [
-            // 1. Yetkazib berish vaqti (Yandex uslubida)
+            // 1. Yetkazib berish vaqti
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -137,7 +139,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.bolt_rounded, color: AppColors.yandexRed, size: 24),
+                  Icon(Icons.bolt_rounded, color: AppColors.accentRed, size: 24),
                   SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -148,7 +150,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
                         ),
                         Text(
-                          'Yandex Go kuryeri eng qisqa vaqtda yetkazadi',
+                          'FoodGo kuryeri eng qisqa vaqtda yetkazadi',
                           style: TextStyle(color: AppColors.grey, fontSize: 12),
                         ),
                       ],
@@ -195,7 +197,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             ),
             const SizedBox(height: 14),
 
-            // Eshik oldida qoldirish (Yandex contactless switch)
+            // Eshik oldida qoldirish (kontaktsiz yetkazish)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
@@ -236,8 +238,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             const SizedBox(height: 10),
             _PaymentOption(
               icon: Icons.account_balance_wallet_rounded,
-              title: "Yandex Pay",
-              subtitle: "Tezkor to'lov · +10% Plus ballari",
+              title: "FoodGo Pay",
+              subtitle: "Tezkor to'lov · +10% Bonus ballari",
               isSelected: _selectedPaymentMethod == 1,
               tag: 'TAVSIYA',
               onTap: () => setState(() => _selectedPaymentMethod = 1),
@@ -308,28 +310,31 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ],
         ),
       ),
+      ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: ElevatedButton(
-            onPressed: _loading ? null : _submit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.dark,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+        child: ContentFrame(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: ElevatedButton(
+              onPressed: _loading ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.dark,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
               ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppColors.dark,
+                      ),
+                    )
+                  : Text('Buyurtma berish · ${formatSom(total)}'),
             ),
-            child: _loading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: AppColors.dark,
-                    ),
-                  )
-                : Text('Buyurtma berish · ${formatSom(total)}'),
           ),
         ),
       ),

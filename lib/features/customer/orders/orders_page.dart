@@ -7,6 +7,7 @@ import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../models/food_order.dart';
@@ -64,7 +65,9 @@ class OrdersPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Buyurtmalar', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
-      body: orders.when(
+      body: ContentFrame(
+        maxWidth: 860,
+        child: orders.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryDark),
         ),
@@ -208,6 +211,7 @@ class OrdersPage extends ConsumerWidget {
             ),
           );
         },
+        ),
       ),
     );
   }

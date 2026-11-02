@@ -71,7 +71,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.dark, // Yandex uslubida sariq fonda to'q matn
+          foregroundColor: AppColors.dark, // FoodGo brend sariq fonda to'q matn
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(

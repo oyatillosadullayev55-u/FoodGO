@@ -6,8 +6,10 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/quantity_stepper.dart';
+import '../../auth/providers/auth_providers.dart';
 import 'cart_provider.dart';
 
 class CartPage extends ConsumerStatefulWidget {
@@ -83,10 +85,11 @@ class _CartPageState extends ConsumerState<CartPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
+      body: ContentFrame(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
               children: [
                 // Restoran ma'lumoti
@@ -131,7 +134,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                 ),
                 const SizedBox(height: 14),
 
-                // Yandex Plus keshbek banner
+                // FoodGo Plus keshbek banner
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
@@ -156,7 +159,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Yandex Plus keshbek',
+                              'FoodGo Plus keshbek',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
@@ -251,7 +254,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Promokod qatori (Yandex style)
+                // Promokod qatori
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
@@ -325,13 +328,30 @@ class _CartPageState extends ConsumerState<CartPage> {
                   _row('Yetkazib berish', formatSom(kDeliveryFee)),
                   if (_promoApplied) ...[
                     const SizedBox(height: 6),
-                    _row('Chegirma (Promokod)', '-${formatSom(discount)}', color: AppColors.yandexRed),
+                    _row('Chegirma (Promokod)', '-${formatSom(discount)}', color: AppColors.accentRed),
                   ],
                   const Divider(height: 20),
                   _row('Jami to\'lov', formatSom(total), bold: true),
                   const SizedBox(height: 14),
                   ElevatedButton(
-                    onPressed: () => context.push(AppRoutes.customerCheckout),
+                    onPressed: () {
+                      // Buyurtma yaratish autentifikatsiya talab qiladi.
+                      final session =
+                          ref.read(supabaseProvider).auth.currentSession;
+                      if (session == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Buyurtma berish uchun tizimga kiring yoki "
+                              "ro'yxatdan o'ting.",
+                            ),
+                          ),
+                        );
+                        context.push(AppRoutes.login);
+                        return;
+                      }
+                      context.push(AppRoutes.customerCheckout);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.dark,
@@ -358,6 +378,7 @@ class _CartPageState extends ConsumerState<CartPage> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../models/food_order.dart';
 import 'orders_page.dart';
@@ -72,7 +73,9 @@ class OrderDetailPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Buyurtma holati', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
-      body: order.when(
+      body: ContentFrame(
+        maxWidth: 820,
+        child: order.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryDark),
         ),
@@ -85,7 +88,7 @@ class OrderDetailPage extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
             children: [
-              // 1. Yandex Go Live Kuzatuv Kartasi
+              // 1. FoodGo Live Kuzatuv Kartasi
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -153,8 +156,8 @@ class OrderDetailPage extends ConsumerWidget {
                         ),
                       )
                     else ...[
-                      // Yandex uslubidagi vizual bosqichlar
-                      _YandexStatusTracker(current: status),
+                      // Buyurtma holati bosqichlari
+                      _OrderStatusTracker(current: status),
                     ],
                   ],
                 ),
@@ -193,7 +196,7 @@ class OrderDetailPage extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Yandex Go Kuryer',
+                              'FoodGo Kuryer',
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                             ),
                             SizedBox(height: 2),
@@ -319,6 +322,7 @@ class OrderDetailPage extends ConsumerWidget {
             ],
           );
         },
+        ),
       ),
     );
   }
@@ -370,9 +374,9 @@ class OrderDetailPage extends ConsumerWidget {
   }
 }
 
-// ===== Yandex Uslubidagi Status Tracker =====
-class _YandexStatusTracker extends StatelessWidget {
-  const _YandexStatusTracker({required this.current});
+// ===== Buyurtma Status Tracker =====
+class _OrderStatusTracker extends StatelessWidget {
+  const _OrderStatusTracker({required this.current});
 
   final OrderStatus current;
 

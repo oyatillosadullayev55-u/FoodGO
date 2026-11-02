@@ -1,10 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:go_router/go_router.dart';
 
 import '../../features/admin/admin_home_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/restaurant/restaurant_home_page.dart';
 import '../../features/auth/presentation/onboarding_page.dart';
-import '../../features/auth/presentation/register_page.dart';
 import '../../features/auth/presentation/role_gate_page.dart';
 import '../../features/auth/presentation/role_placeholder.dart';
 import '../../features/auth/presentation/splash_page.dart';
@@ -41,7 +41,7 @@ class AppRoutes {
 }
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
+  initialLocation: kIsWeb ? AppRoutes.customerHome : AppRoutes.splash,
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
     GoRoute(
@@ -51,7 +51,7 @@ final appRouter = GoRouter(
     GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
     GoRoute(
       path: AppRoutes.register,
-      builder: (_, _) => const RegisterPage(),
+      redirect: (context, state) => AppRoutes.login,
     ),
     GoRoute(path: AppRoutes.gate, builder: (_, _) => const RoleGatePage()),
 
@@ -115,7 +115,7 @@ final appRouter = GoRouter(
       ],
     ),
 
-    // ===== Boshqa rollar (keyingi bosqichlarda) =====
+    // ===== Boshqa rollar =====
     GoRoute(
       path: AppRoutes.courierHome,
       builder: (_, _) => const RolePlaceholder('Kuryer'),

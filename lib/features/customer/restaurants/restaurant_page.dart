@@ -7,7 +7,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../models/product.dart';
@@ -61,46 +63,52 @@ class RestaurantPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: restaurant.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryDark),
-        ),
-        error: (e, _) => ErrorView(
-          message: friendlyError(e),
-          onRetry: () => _refresh(ref),
-        ),
-        data: (r) => RefreshIndicator(
-          color: AppColors.dark,
-          backgroundColor: AppColors.primary,
-          onRefresh: () => _refresh(ref),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 80),
-            children: [
-              _Header(restaurant: r),
-              const SizedBox(height: 18),
-              products.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 48),
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primaryDark),
+      body: ContentFrame(
+        maxWidth: 860,
+        child: restaurant.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryDark),
+          ),
+          error: (e, _) => ErrorView(
+            message: friendlyError(e),
+            onRetry: () => _refresh(ref),
+          ),
+          data: (r) => RefreshIndicator(
+            color: AppColors.dark,
+            backgroundColor: AppColors.primary,
+            onRefresh: () => _refresh(ref),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 80),
+              children: [
+                _Header(restaurant: r),
+                const SizedBox(height: 18),
+                products.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
                   ),
+                  error: (e, _) => ErrorView(
+                    message: friendlyError(e),
+                    onRetry: () =>
+                        ref.invalidate(productsProvider(restaurantId)),
+                  ),
+                  data: (list) => list.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: EmptyView(
+                            icon: Icons.restaurant_menu_rounded,
+                            title: "Menyu hali bo'sh",
+                            message: "Bu restoran hali taom qo'shmagan.",
+                          ),
+                        )
+                      : _Menu(restaurant: r, products: list),
                 ),
-                error: (e, _) => ErrorView(
-                  message: friendlyError(e),
-                  onRetry: () => ref.invalidate(productsProvider(restaurantId)),
-                ),
-                data: (list) => list.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: EmptyView(
-                          icon: Icons.restaurant_menu_rounded,
-                          title: "Menyu hali bo'sh",
-                          message: "Bu restoran hali taom qo'shmagan.",
-                        ),
-                      )
-                    : _Menu(restaurant: r, products: list),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -144,14 +152,15 @@ class _Header extends StatelessWidget {
           SizedBox(
             height: 180,
             width: double.infinity,
-            child: r.imageUrl == null
-                ? const _HeaderPlaceholder()
-                : CachedNetworkImage(
-                    imageUrl: r.imageUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => const _HeaderPlaceholder(),
-                    errorWidget: (_, _, _) => const _HeaderPlaceholder(),
-                  ),
+            child: CachedNetworkImage(
+              imageUrl: FoodImages.getRestaurantImage(r.name, r.imageUrl),
+              fit: BoxFit.cover,
+              placeholder: (_, _) => Container(color: AppColors.primarySoft),
+              errorWidget: (_, _, _) => Image.network(
+                FoodImages.restaurantDefault,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -202,7 +211,7 @@ class _Header extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 14),
-                // Yandex ma'lumotlar qatori: Yetkazish vaqti, narxi, manzil
+                // Ma'lumotlar qatori: Yetkazish vaqti, narxi, manzil
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -270,20 +279,6 @@ class _Header extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _HeaderPlaceholder extends StatelessWidget {
-  const _HeaderPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.primarySoft,
-      child: const Center(
-        child: Icon(Icons.restaurant_rounded, size: 56, color: AppColors.primaryDark),
       ),
     );
   }

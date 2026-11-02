@@ -66,12 +66,16 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             children: [
-              // 1. Yandex manzillar va yetkazish vaqti paneli
-              _YandexAddressBar(address: profile?.fullName != null ? 'Toshkent, Amir Temur sh.' : 'Yetkazish manzilini tanlang'),
+              // 1. Manzillar va yetkazish vaqti paneli
+              _AddressBar(address: profile?.fullName != null ? 'Toshkent, Amir Temur sh.' : 'Yetkazish manzilini tanlang'),
+              const SizedBox(height: 12),
+
+              // 2. Rolni tanlash (Mijoz, Owner, Admin)
+              const _RoleSwitcherBar(),
               const SizedBox(height: 14),
 
-              // 2. Yandex uslubidagi qidiruv paneli
-              _YandexSearchBar(
+              // 3. Qidiruv paneli
+              _SearchBar(
                 controller: _search,
                 onChanged: _onSearchChanged,
                 onClear: () {
@@ -81,8 +85,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const SizedBox(height: 18),
 
-              // 3. Yandex Go / Eats aksiyalar va storiyalar karuseli
-              const _YandexPromoBanners(),
+              // 4. Aksiyalar va storiyalar karuseli
+              const _PromoBanners(),
               const SizedBox(height: 18),
 
               // 4. Kategoriya ikonkalari
@@ -139,9 +143,113 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-// ===== Yandex Manzil va Vaqt Paneli =====
-class _YandexAddressBar extends StatelessWidget {
-  const _YandexAddressBar({required this.address});
+// ===== Rolni tanlash paneli (Mijoz, Owner, Admin) =====
+class _RoleSwitcherBar extends StatelessWidget {
+  const _RoleSwitcherBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurfaceElevated : AppColors.greyLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white10 : AppColors.borderLight, width: 0.8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_rounded, size: 16, color: AppColors.dark),
+                  SizedBox(width: 5),
+                  Text(
+                    'Mijoz',
+                    style: TextStyle(
+                      color: AppColors.dark,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: InkWell(
+              onTap: () => context.push(AppRoutes.restaurantHome),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.storefront_rounded, size: 16, color: AppColors.grey),
+                    SizedBox(width: 5),
+                    Text(
+                      'Owner',
+                      style: TextStyle(
+                        color: AppColors.grey,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: InkWell(
+              onTap: () => context.push(AppRoutes.adminHome),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.admin_panel_settings_rounded, size: 16, color: AppColors.grey),
+                    SizedBox(width: 5),
+                    Text(
+                      'Admin',
+                      style: TextStyle(
+                        color: AppColors.grey,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===== Manzil va Vaqt Paneli =====
+class _AddressBar extends StatelessWidget {
+  const _AddressBar({required this.address});
 
   final String address;
 
@@ -224,7 +332,7 @@ class _YandexAddressBar extends StatelessWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.bolt_rounded, size: 16, color: AppColors.yandexRed),
+              Icon(Icons.bolt_rounded, size: 16, color: AppColors.accentRed),
               SizedBox(width: 4),
               Text(
                 '25 daq',
@@ -238,9 +346,9 @@ class _YandexAddressBar extends StatelessWidget {
   }
 }
 
-// ===== Yandex Qidiruv Paneli =====
-class _YandexSearchBar extends StatelessWidget {
-  const _YandexSearchBar({
+// ===== Qidiruv Paneli =====
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({
     required this.controller,
     required this.onChanged,
     required this.onClear,
@@ -292,9 +400,9 @@ class _YandexSearchBar extends StatelessWidget {
   }
 }
 
-// ===== Yandex Aksiya va Reklama Bannerlari =====
-class _YandexPromoBanners extends StatelessWidget {
-  const _YandexPromoBanners();
+// ===== Aksiya va Reklama Bannerlari =====
+class _PromoBanners extends StatelessWidget {
+  const _PromoBanners();
 
   @override
   Widget build(BuildContext context) {
@@ -306,25 +414,25 @@ class _YandexPromoBanners extends StatelessWidget {
         color: AppColors.primary,
         textColor: AppColors.dark,
         icon: Icons.delivery_dining_rounded,
-        tag: 'Yandex Go',
+        tag: 'FoodGo',
       ),
       _PromoData(
         title: '20% chegirma',
         subtitle: 'Barcha yangi mijozlarga',
         caption: 'Promokod: GO20',
-        color: AppColors.yandexRed,
+        color: AppColors.accentRed,
         textColor: Colors.white,
         icon: Icons.local_offer_rounded,
         tag: 'AKSIYA',
       ),
       _PromoData(
-        title: 'Yandex Plus',
+        title: 'FoodGo Plus',
         subtitle: '+10% keshbek',
         caption: 'Har bir buyurtmada ballar',
         color: const Color(0xFF6A11CB),
         textColor: Colors.white,
         icon: Icons.star_rounded,
-        tag: 'Plus',
+        tag: 'Bonus',
       ),
       _PromoData(
         title: 'Bepul yetkazish',
@@ -436,7 +544,7 @@ class _PromoData {
   final String tag;
 }
 
-// ===== Tezkor Kategoriya Ikonkalari (Yandex uslubi) =====
+// ===== Tezkor Kategoriya Ikonkalari =====
 class _QuickCategoryIcons extends ConsumerWidget {
   const _QuickCategoryIcons();
 
@@ -630,14 +738,43 @@ class _RestaurantList extends ConsumerWidget {
             ),
           );
         }
-        return Column(
-          children: [
-            for (final r in list)
-              RestaurantCard(
-                restaurant: r,
-                onTap: () => context.push(AppRoutes.restaurantPath(r.id)),
-              ),
-          ],
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 980
+                ? 3
+                : constraints.maxWidth >= 620
+                    ? 2
+                    : 1;
+            if (columns == 1) {
+              return Column(
+                children: [
+                  for (final r in list)
+                    RestaurantCard(
+                      restaurant: r,
+                      onTap: () =>
+                          context.push(AppRoutes.restaurantPath(r.id)),
+                    ),
+                ],
+              );
+            }
+            const spacing = 16.0;
+            final cardWidth =
+                (constraints.maxWidth - spacing * (columns - 1)) / columns;
+            return Wrap(
+              spacing: spacing,
+              children: [
+                for (final r in list)
+                  SizedBox(
+                    width: cardWidth,
+                    child: RestaurantCard(
+                      restaurant: r,
+                      onTap: () =>
+                          context.push(AppRoutes.restaurantPath(r.id)),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );

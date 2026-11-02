@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
 import '../../../models/restaurant.dart';
 
@@ -16,6 +17,7 @@ class RestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = restaurant;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayImageUrl = FoodImages.getRestaurantImage(r.name, r.imageUrl);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
@@ -41,21 +43,26 @@ class RestaurantCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Rasm va Yandex badge'lari
+            // Rasm va ma'lumot nishonlari
             Stack(
               children: [
                 SizedBox(
                   height: 165,
                   width: double.infinity,
-                  child: r.imageUrl == null
-                      ? const _ImagePlaceholder()
-                      : CachedNetworkImage(
-                          imageUrl: r.imageUrl!,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => const _ImagePlaceholder(),
-                          errorWidget: (_, url, error) =>
-                              const _ImagePlaceholder(),
-                        ),
+                  child: CachedNetworkImage(
+                    imageUrl: displayImageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _) => Container(
+                      color: AppColors.primarySoft,
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryDark),
+                      ),
+                    ),
+                    errorWidget: (_, url, error) => Image.network(
+                      FoodImages.restaurantDefault,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 // Gradient soya
                 Positioned.fill(
@@ -67,14 +74,14 @@ class RestaurantCard extends StatelessWidget {
                         colors: [
                           Colors.black.withValues(alpha: 0.25),
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.5),
+                          Colors.black.withValues(alpha: 0.55),
                         ],
-                        stops: const [0.0, 0.5, 1.0],
+                        stops: const [0.0, 0.45, 1.0],
                       ),
                     ),
                   ),
                 ),
-                // Yetkazib berish vaqti (Yandex uslubida)
+                // Yetkazib berish vaqti
                 Positioned(
                   top: 12,
                   left: 12,
@@ -110,7 +117,7 @@ class RestaurantCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Yandex Plus keshbek belgisi
+                // Bonus nishoni
                 Positioned(
                   top: 12,
                   right: 12,
@@ -128,7 +135,7 @@ class RestaurantCard extends StatelessWidget {
                             size: 14, color: AppColors.primary),
                         SizedBox(width: 3),
                         Text(
-                          'Plus',
+                          'Bonus',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -189,7 +196,7 @@ class RestaurantCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Yandex uslubidagi reyting nishoni
+                      // Reyting nishoni
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 7, vertical: 3),
@@ -274,20 +281,6 @@ class RestaurantCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.primarySoft,
-      child: const Center(
-        child: Icon(Icons.restaurant_rounded, size: 48, color: AppColors.primaryDark),
       ),
     );
   }

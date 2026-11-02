@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/errors/error_mapper.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/food_images.dart';
 import '../auth/providers/auth_providers.dart';
 import '../customer/home/home_providers.dart';
 
@@ -22,36 +23,46 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage> {
     final nameController = TextEditingController();
     final descController = TextEditingController();
     final addressController = TextEditingController();
-    final imageController = TextEditingController(
-      text: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500',
-    );
+    final imageController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Yangi hamkor restoran qo'shish"),
+        title: const Text("Yangi restoran qo'shish"),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Restoran nomi'),
+                decoration: const InputDecoration(
+                  labelText: 'Restoran nomi',
+                  hintText: 'Osh Markazi, Evos, Rayhon...',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Tavsif (masalan: Fast food, Milliy taomlar)'),
+                decoration: const InputDecoration(
+                  labelText: 'Tavsif',
+                  hintText: 'Milliy taomlar, Fast food, Pitsa...',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: addressController,
-                decoration: const InputDecoration(labelText: 'Manzil'),
+                decoration: const InputDecoration(
+                  labelText: 'Manzil',
+                  hintText: 'Chilonzor, Amir Temur ko\'chasi...',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: imageController,
-                decoration: const InputDecoration(labelText: 'Rasm URL manzili'),
+                decoration: const InputDecoration(
+                  labelText: 'Rasm URL (ixtiyoriy)',
+                  hintText: 'Bo\'sh qoldirilsa avtomatik qo\'yiladi',
+                ),
               ),
             ],
           ),
@@ -65,32 +76,33 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage> {
             onPressed: () async {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
+              final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
 
               setState(() => _loading = true);
               try {
                 final client = ref.read(supabaseProvider);
+                final img = imageController.text.trim().isNotEmpty
+                    ? imageController.text.trim()
+                    : FoodImages.getRestaurantImage(name, null);
+
                 await client.from('restaurants').insert({
                   'name': name,
                   'description': descController.text.trim().isEmpty ? 'Mazali taomlar' : descController.text.trim(),
                   'address': addressController.text.trim().isEmpty ? 'Toshkent sh.' : addressController.text.trim(),
-                  'image_url': imageController.text.trim(),
+                  'image_url': img,
                   'rating': 4.9,
                   'open_time': '08:00:00',
                   'close_time': '23:00:00',
                 });
                 ref.invalidate(restaurantsProvider);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Restoran muvaffaqiyatli qo'shildi!")),
-                  );
-                }
+                messenger.showSnackBar(
+                  const SnackBar(content: Text("Restoran muvaffaqiyatli qo'shildi!")),
+                );
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(friendlyError(e))),
-                  );
-                }
+                messenger.showSnackBar(
+                  SnackBar(content: Text(friendlyError(e))),
+                );
               } finally {
                 if (mounted) setState(() => _loading = false);
               }
@@ -106,116 +118,239 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     final restaurantsAsync = ref.watch(restaurantsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Paneli — Hamkorlar', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Admin Boshqaruv Paneli', style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () async {
-              await ref.read(authRepositoryProvider).signOut();
-              ref.invalidate(profileProvider);
-              if (context.mounted) context.go(AppRoutes.login);
-            },
+          TextButton.icon(
+            onPressed: () => context.go(AppRoutes.customerHome),
+            icon: const Icon(Icons.storefront_rounded, size: 18),
+            label: const Text('Mijoz rejimi', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _loading ? null : _showAddRestaurantDialog,
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add, color: AppColors.dark),
-        label: const Text("Hamkor (Restoran) qo'shish", style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.w800)),
+        label: const Text("Restoran qo'shish", style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.w800)),
       ),
-      body: restaurantsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primaryDark)),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-              const SizedBox(height: 12),
-              Text(friendlyError(e), textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(restaurantsProvider),
-                child: const Text('Qayta urinish'),
+      body: Column(
+        children: [
+          // Yuqori Rol Almashtirgich
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurfaceElevated : AppColors.greyLight,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isDark ? Colors.white10 : AppColors.borderLight, width: 0.8),
               ),
-            ],
-          ),
-        ),
-        data: (restaurants) => ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-          itemCount: restaurants.length,
-          itemBuilder: (context, index) {
-            final r = restaurants[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(12),
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: r.imageUrl != null
-                      ? Image.network(r.imageUrl!, width: 60, height: 60, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: Colors.grey[300]))
-                      : Container(width: 60, height: 60, color: Colors.grey[300]),
-                ),
-                title: Text(r.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text(r.description ?? '', style: const TextStyle(fontSize: 13, color: AppColors.grey)),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text('${r.rating}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.location_on_outlined, size: 14, color: AppColors.grey),
-                        const SizedBox(width: 2),
-                        Expanded(child: Text(r.address ?? 'Toshkent', style: const TextStyle(fontSize: 12, color: AppColors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      ],
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => context.go(AppRoutes.customerHome),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.person_outline_rounded, size: 16, color: AppColors.grey),
+                            SizedBox(width: 4),
+                            Text(
+                              'Mijoz',
+                              style: TextStyle(
+                                color: AppColors.grey,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Restoranni o'chirish"),
-                        content: Text("'${r.name}' restoranini o'chirmoqchimisiz?"),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Yo'q")),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                            child: const Text("O'chirish"),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => context.go(AppRoutes.restaurantHome),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.storefront_outlined, size: 16, color: AppColors.grey),
+                            SizedBox(width: 4),
+                            Text(
+                              'Owner',
+                              style: TextStyle(
+                                color: AppColors.grey,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
                           ),
                         ],
                       ),
-                    );
-                    if (confirm != true) return;
-                    try {
-                      final client = ref.read(supabaseProvider);
-                      await client.from('restaurants').delete().eq('id', r.id);
-                      ref.invalidate(restaurantsProvider);
-                    } catch (err) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(friendlyError(err))),
-                        );
-                      }
-                    }
-                  },
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.admin_panel_settings_rounded, size: 16, color: AppColors.dark),
+                          SizedBox(width: 4),
+                          Text(
+                            'Admin (Faol)',
+                            style: TextStyle(
+                              color: AppColors.dark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: restaurantsAsync.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryDark),
+              ),
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const SizedBox(height: 12),
+                    Text(friendlyError(e), textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(restaurantsProvider),
+                      child: const Text('Qayta urinish'),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        ),
+              data: (restaurants) => ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+                itemCount: restaurants.length,
+                itemBuilder: (context, index) {
+                  final r = restaurants[index];
+                  final img = FoodImages.getRestaurantImage(r.name, r.imageUrl);
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          img,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 60,
+                            height: 60,
+                            color: AppColors.primarySoft,
+                            child: const Icon(Icons.restaurant, color: AppColors.primaryDark),
+                          ),
+                        ),
+                      ),
+                      title: Text(r.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(r.description ?? '', style: const TextStyle(fontSize: 13, color: AppColors.grey)),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, size: 14, color: Colors.amber),
+                              const SizedBox(width: 4),
+                              Text('${r.rating}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                              const SizedBox(width: 12),
+                              const Icon(Icons.location_on_outlined, size: 14, color: AppColors.grey),
+                              const SizedBox(width: 2),
+                              Expanded(
+                                child: Text(
+                                  r.address ?? 'Toshkent',
+                                  style: const TextStyle(fontSize: 12, color: AppColors.grey),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text("Restoranni o'chirish"),
+                              content: Text("'${r.name}' restoranini o'chirmoqchimisiz?"),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Yo'q")),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                                  child: const Text("O'chirish"),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm != true) return;
+                          try {
+                            final client = ref.read(supabaseProvider);
+                            await client.from('restaurants').delete().eq('id', r.id);
+                            ref.invalidate(restaurantsProvider);
+                          } catch (err) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(friendlyError(err))),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

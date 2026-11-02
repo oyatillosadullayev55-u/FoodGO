@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../auth/providers/auth_providers.dart';
 
@@ -18,9 +19,11 @@ class ProfilePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil & FoodGo ID', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Profil', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
-      body: profile.when(
+      body: ContentFrame(
+        maxWidth: 720,
+        child: profile.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryDark),
         ),
@@ -100,7 +103,7 @@ class ProfilePage extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // 2. Yandex Plus Kartasi
+            // 2. FoodGo Plus Kartasi
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -181,7 +184,27 @@ class ProfilePage extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
 
-            // 3. Bo'limlar
+            // 3. Boshqaruv rollari (Owner & Admin)
+            _MenuSection(
+              title: 'Boshqaruv rollari (Owner & Admin)',
+              items: [
+                _MenuItem(
+                  icon: Icons.storefront_rounded,
+                  title: 'Owner — Restoran boshqaruvi',
+                  subtitle: 'Taomlar menyusi va buyurtmalar holati',
+                  onTap: () => context.push(AppRoutes.restaurantHome),
+                ),
+                _MenuItem(
+                  icon: Icons.admin_panel_settings_rounded,
+                  title: 'Admin paneli',
+                  subtitle: 'Restoranlar va umumiy tizim boshqaruvi',
+                  onTap: () => context.push(AppRoutes.adminHome),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 4. Bo'limlar
             _MenuSection(
               title: 'Buyurtmalar va To\'lovlar',
               items: [
@@ -232,25 +255,41 @@ class ProfilePage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // 4. Chiqish tugmasi
-            OutlinedButton.icon(
-              onPressed: () async {
-                await ref.read(authRepositoryProvider).signOut();
-                ref.invalidate(profileProvider);
-                if (context.mounted) context.go(AppRoutes.login);
-              },
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Hisobdan chiqish'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                foregroundColor: AppColors.error,
-                side: const BorderSide(color: AppColors.error, width: 1.2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            // 4. Kirish yoki chiqish tugmasi
+            if (ref.watch(supabaseProvider).auth.currentSession == null)
+              ElevatedButton.icon(
+                onPressed: () => context.push(AppRoutes.login),
+                icon: const Icon(Icons.login_rounded),
+                label: const Text('Rolni almashtirish / Kirish'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.dark,
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: () async {
+                  await ref.read(authRepositoryProvider).signOut();
+                  ref.invalidate(profileProvider);
+                  if (context.mounted) context.go(AppRoutes.login);
+                },
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text('Hisobdan chiqish'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error, width: 1.2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
-            ),
           ],
+        ),
         ),
       ),
     );
