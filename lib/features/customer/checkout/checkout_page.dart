@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/error_mapper.dart';
@@ -10,6 +11,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/app_map.dart';
 import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -30,6 +32,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _note = TextEditingController();
   bool _loading = false;
   bool _leaveAtDoor = false;
+  LatLng? _destination;
   int _selectedPaymentMethod = 0; // 0: Naqd pul, 1: FoodGo Pay, 2: Karta
 
   late final String _idempotencyKey = _newKey();
@@ -42,13 +45,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(profileProvider).maybeWhen(
-      data: (p) => p,
-      orElse: () => null,
-    );
+    final profile = ref
+        .read(profileProvider)
+        .maybeWhen(data: (p) => p, orElse: () => null);
     if (profile?.phone != null) _phone.text = profile!.phone!;
     if (_address.text.isEmpty) {
-      _address.text = 'Toshkent sh., Amir Temur shoh ko\'chasi, 25-uy, 14-xonadon';
+      _address.text =
+          'Toshkent sh., Amir Temur shoh ko\'chasi, 25-uy, 14-xonadon';
     }
   }
 
@@ -62,6 +65,30 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Future<void> _submit() async {
     if (_loading) return;
+    if (ref.read(supabaseProvider).auth.currentSession == null) {
+      final goLogin = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Tizimga kirish kerak'),
+          content: const Text(
+            'Buyurtma berish uchun hisobingiz bilan kiring yoki '
+            "ro'yxatdan o'ting.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Bekor qilish'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Kirish'),
+            ),
+          ],
+        ),
+      );
+      if (goLogin == true && mounted) context.go(AppRoutes.login);
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     final cart = ref.read(cartProvider);
@@ -75,14 +102,18 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         if (_note.text.trim().isNotEmpty) _note.text.trim(),
       ].join(' · ');
 
-      final orderId = await ref.read(ordersRepositoryProvider).createOrder(
-        restaurantId: restaurant.id,
-        items: cart.items,
-        address: _address.text.trim(),
-        phone: Validators.cleanPhone(_phone.text),
-        note: fullNote.isEmpty ? null : fullNote,
-        idempotencyKey: _idempotencyKey,
-      );
+      final orderId = await ref
+          .read(ordersRepositoryProvider)
+          .createOrder(
+            restaurantId: restaurant.id,
+            items: cart.items,
+            address: _address.text.trim(),
+            phone: Validators.cleanPhone(_phone.text),
+            note: fullNote.isEmpty ? null : fullNote,
+            lat: _destination?.latitude,
+            lng: _destination?.longitude,
+            idempotencyKey: _idempotencyKey,
+          );
       ref.read(cartProvider.notifier).clear();
       ref.invalidate(ordersProvider);
       if (mounted) context.go(AppRoutes.orderPath(orderId));
@@ -124,192 +155,293 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         child: Form(
           key: _formKey,
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
-          children: [
-            // 1. Yetkazib berish vaqti
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : AppColors.borderLight,
-                  width: 0.8,
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
+            children: [
+              // 1. Yetkazib berish vaqti
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : AppColors.borderLight,
+                    width: 0.8,
+                  ),
                 ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.bolt_rounded, color: AppColors.accentRed, size: 24),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tezkor yetkazish: 20–30 daqiqa',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
-                        ),
-                        Text(
-                          'FoodGo kuryeri eng qisqa vaqtda yetkazadi',
-                          style: TextStyle(color: AppColors.grey, fontSize: 12),
-                        ),
-                      ],
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.bolt_rounded,
+                      color: AppColors.accentRed,
+                      size: 24,
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-
-            // 2. Manzil
-            _title(context, 'Yetkazib berish manzili'),
-            TextFormField(
-              controller: _address,
-              minLines: 2,
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: "Ko'cha, uy, xonadon, pod'ezd, qavat",
-                prefixIcon: Icon(Icons.location_on_rounded, color: AppColors.dark),
-              ),
-              validator: (v) => (v ?? '').trim().length < 5
-                  ? "Manzilni to'liq kiriting"
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                hintText: 'Telefon raqami (+998...)',
-                prefixIcon: Icon(Icons.phone_rounded, color: AppColors.dark),
-              ),
-              validator: Validators.phone,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _note,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                hintText: 'Kuryer uchun izoh (mo\'ljal, domofon kodi)',
-                prefixIcon: Icon(Icons.comment_rounded, color: AppColors.dark),
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Eshik oldida qoldirish (kontaktsiz yetkazish)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : AppColors.borderLight,
-                  width: 0.8,
-                ),
-              ),
-              child: SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _leaveAtDoor,
-                activeThumbColor: AppColors.primary,
-                activeTrackColor: AppColors.dark,
-                onChanged: (val) => setState(() => _leaveAtDoor = val),
-                title: const Text(
-                  'Eshik oldida qoldirish',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                ),
-                subtitle: const Text(
-                  'Kuryer taomni eshik oldiga qo\'yadi va qo\'ng\'iroq qiladi',
-                  style: TextStyle(fontSize: 12, color: AppColors.grey),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // 3. To'lov usuli
-            _title(context, "To'lov usuli"),
-            _PaymentOption(
-              icon: Icons.payments_rounded,
-              title: "Naqd pul orqali",
-              subtitle: "Kuryer yetkazganda to'lanadi",
-              isSelected: _selectedPaymentMethod == 0,
-              onTap: () => setState(() => _selectedPaymentMethod = 0),
-            ),
-            const SizedBox(height: 10),
-            _PaymentOption(
-              icon: Icons.account_balance_wallet_rounded,
-              title: "FoodGo Pay",
-              subtitle: "Tezkor to'lov · +10% Bonus ballari",
-              isSelected: _selectedPaymentMethod == 1,
-              tag: 'TAVSIYA',
-              onTap: () => setState(() => _selectedPaymentMethod = 1),
-            ),
-            const SizedBox(height: 10),
-            _PaymentOption(
-              icon: Icons.credit_card_rounded,
-              title: "Bank kartasi (Uzcard / Humo)",
-              subtitle: "Ilovada biriktirilgan karta",
-              isSelected: _selectedPaymentMethod == 2,
-              onTap: () => setState(() => _selectedPaymentMethod = 2),
-            ),
-            const SizedBox(height: 22),
-
-            // 4. Buyurtma tafsilotlari
-            _title(context, 'Buyurtma tarkibi'),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : AppColors.borderLight,
-                  width: 0.8,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.storefront_rounded, size: 18, color: AppColors.dark),
-                      const SizedBox(width: 6),
-                      Text(
-                        cart.restaurant?.name ?? '',
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 20),
-                  for (final i in cart.items)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              '${i.quantity} × ${i.product.name}',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          Text(
+                            'Tezkor yetkazish: 20–30 daqiqa',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14.5,
                             ),
                           ),
                           Text(
-                            formatSom(i.total),
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                            'FoodGo kuryeri eng qisqa vaqtda yetkazadi',
+                            style: TextStyle(
+                              color: AppColors.grey,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  const Divider(height: 20),
-                  _row('Taomlar summasi', formatSom(cart.subtotal)),
-                  const SizedBox(height: 6),
-                  _row('Yetkazib berish xizmati', formatSom(kDeliveryFee)),
-                  const Divider(height: 20),
-                  _row('Jami to\'lov', formatSom(total), bold: true),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 18),
+
+              // 2. Manzil
+              _title(context, 'Yetkazib berish manzili'),
+              TextFormField(
+                controller: _address,
+                minLines: 2,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: "Ko'cha, uy, xonadon, pod'ezd, qavat",
+                  prefixIcon: Icon(
+                    Icons.location_on_rounded,
+                    color: AppColors.dark,
+                  ),
+                ),
+                validator: (v) => (v ?? '').trim().length < 5
+                    ? "Manzilni to'liq kiriting"
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  hintText: 'Telefon raqami (+998...)',
+                  prefixIcon: Icon(Icons.phone_rounded, color: AppColors.dark),
+                ),
+                validator: Validators.phone,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _note,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  hintText: 'Kuryer uchun izoh (mo\'ljal, domofon kodi)',
+                  prefixIcon: Icon(
+                    Icons.comment_rounded,
+                    color: AppColors.dark,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Xaritada joylashuv
+              _title(context, "Xaritada uy joylashuvi"),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : AppColors.borderLight,
+                    width: 0.8,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppMap(
+                      points: [
+                        if (cart.restaurant?.location != null)
+                          MapPoint(
+                            point: cart.restaurant!.location!,
+                            icon: Icons.storefront_rounded,
+                            color: AppColors.primary,
+                            label: cart.restaurant!.name,
+                          ),
+                        if (_destination != null)
+                          MapPoint(
+                            point: _destination!,
+                            icon: Icons.home_rounded,
+                            color: AppColors.accentPurple,
+                          ),
+                      ],
+                      center: _destination ?? cart.restaurant?.location,
+                      zoom: 13,
+                      height: 220,
+                      onTap: (point) => setState(() => _destination = point),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.touch_app_rounded,
+                          size: 16,
+                          color: AppColors.grey,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _destination == null
+                                ? 'Xaritani bosib uyingizni belgilang (kuryer uchun aniq manzil)'
+                                : 'Belgilangan nuqta: ${_destination!.latitude.toStringAsFixed(5)}, ${_destination!.longitude.toStringAsFixed(5)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey,
+                            ),
+                          ),
+                        ),
+                        if (_destination != null)
+                          TextButton(
+                            onPressed: () =>
+                                setState(() => _destination = null),
+                            child: const Text('Tozalash'),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Eshik oldida qoldirish (kontaktsiz yetkazish)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : AppColors.borderLight,
+                    width: 0.8,
+                  ),
+                ),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _leaveAtDoor,
+                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: AppColors.dark,
+                  onChanged: (val) => setState(() => _leaveAtDoor = val),
+                  title: const Text(
+                    'Eshik oldida qoldirish',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  ),
+                  subtitle: const Text(
+                    'Kuryer taomni eshik oldiga qo\'yadi va qo\'ng\'iroq qiladi',
+                    style: TextStyle(fontSize: 12, color: AppColors.grey),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // 3. To'lov usuli
+              _title(context, "To'lov usuli"),
+              _PaymentOption(
+                icon: Icons.payments_rounded,
+                title: "Naqd pul orqali",
+                subtitle: "Kuryer yetkazganda to'lanadi",
+                isSelected: _selectedPaymentMethod == 0,
+                onTap: () => setState(() => _selectedPaymentMethod = 0),
+              ),
+              const SizedBox(height: 10),
+              _PaymentOption(
+                icon: Icons.account_balance_wallet_rounded,
+                title: "FoodGo Pay",
+                subtitle: "Tezkor to'lov · +10% Bonus ballari",
+                isSelected: _selectedPaymentMethod == 1,
+                tag: 'TAVSIYA',
+                onTap: () => setState(() => _selectedPaymentMethod = 1),
+              ),
+              const SizedBox(height: 10),
+              _PaymentOption(
+                icon: Icons.credit_card_rounded,
+                title: "Bank kartasi (Uzcard / Humo)",
+                subtitle: "Ilovada biriktirilgan karta",
+                isSelected: _selectedPaymentMethod == 2,
+                onTap: () => setState(() => _selectedPaymentMethod = 2),
+              ),
+              const SizedBox(height: 22),
+
+              // 4. Buyurtma tafsilotlari
+              _title(context, 'Buyurtma tarkibi'),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : AppColors.borderLight,
+                    width: 0.8,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.storefront_rounded,
+                          size: 18,
+                          color: AppColors.dark,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          cart.restaurant?.name ?? '',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 20),
+                    for (final i in cart.items)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${i.quantity} × ${i.product.name}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              formatSom(i.total),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const Divider(height: 20),
+                    _row('Taomlar summasi', formatSom(cart.subtotal)),
+                    const SizedBox(height: 6),
+                    _row('Yetkazib berish xizmati', formatSom(kDeliveryFee)),
+                    const Divider(height: 20),
+                    _row('Jami to\'lov', formatSom(total), bold: true),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
       bottomNavigationBar: SafeArea(
         child: ContentFrame(
@@ -346,9 +478,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         text,
-        style: Theme.of(context)
-            .textTheme
-            .titleMedium
+        style: Theme.of(context).textTheme.titleMedium
             ?.copyWith(fontWeight: FontWeight.w800, fontSize: 17),
       ),
     );
@@ -361,7 +491,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label, style: style), Text(value, style: style)],
+      children: [
+        Text(label, style: style),
+        Text(value, style: style),
+      ],
     );
   }
 }
@@ -396,7 +529,9 @@ class _PaymentOption extends StatelessWidget {
           color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.dark : (isDark ? Colors.white10 : AppColors.borderLight),
+            color: isSelected
+                ? AppColors.dark
+                : (isDark ? Colors.white10 : AppColors.borderLight),
             width: isSelected ? 2 : 0.8,
           ),
         ),
@@ -419,12 +554,18 @@ class _PaymentOption extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14.5,
+                        ),
                       ),
                       if (tag != null) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(6),
@@ -450,7 +591,9 @@ class _PaymentOption extends StatelessWidget {
               ),
             ),
             Icon(
-              isSelected ? Icons.check_circle_rounded : Icons.radio_button_off_rounded,
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_off_rounded,
               color: isSelected ? AppColors.dark : AppColors.grey,
               size: 22,
             ),

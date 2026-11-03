@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/admin/admin_home_page.dart';
 import '../../features/auth/presentation/login_page.dart';
-import '../../features/restaurant/restaurant_home_page.dart';
 import '../../features/auth/presentation/onboarding_page.dart';
+import '../../features/auth/presentation/register_page.dart';
 import '../../features/auth/presentation/role_gate_page.dart';
-import '../../features/auth/presentation/role_placeholder.dart';
 import '../../features/auth/presentation/splash_page.dart';
+import '../../features/auth/data/user_profile.dart';
+import '../../features/courier/courier_home_page.dart';
 import '../../features/customer/cart/cart_page.dart';
 import '../../features/customer/checkout/checkout_page.dart';
 import '../../features/customer/customer_shell.dart';
@@ -17,6 +18,8 @@ import '../../features/customer/orders/orders_page.dart';
 import '../../features/customer/profile/profile_page.dart';
 import '../../features/customer/restaurants/restaurant_page.dart';
 import '../../features/customer/search/search_page.dart';
+import '../../features/restaurant/restaurant_home_page.dart';
+import '../widgets/role_guard.dart';
 
 class AppRoutes {
   static const splash = '/';
@@ -49,84 +52,95 @@ final appRouter = GoRouter(
       builder: (_, _) => const OnboardingPage(),
     ),
     GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
-    GoRoute(
-      path: AppRoutes.register,
-      redirect: (context, state) => AppRoutes.login,
-    ),
+    GoRoute(path: AppRoutes.register, builder: (_, _) => const RegisterPage()),
     GoRoute(path: AppRoutes.gate, builder: (_, _) => const RoleGatePage()),
 
     // ===== Mijoz: pastki navigatsiya =====
     StatefulShellRoute.indexedStack(
-      builder: (context, state, shell) =>
-          CustomerShell(navigationShell: shell),
+      builder: (context, state, shell) => CustomerShell(navigationShell: shell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.customerHome,
-            builder: (_, _) => const HomePage(),
-            routes: [
-              GoRoute(
-                path: 'restaurant/:id',
-                builder: (_, state) => RestaurantPage(
-                  restaurantId: state.pathParameters['id']!,
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.customerHome,
+              builder: (_, _) => const HomePage(),
+              routes: [
+                GoRoute(
+                  path: 'restaurant/:id',
+                  builder: (_, state) =>
+                      RestaurantPage(restaurantId: state.pathParameters['id']!),
                 ),
-              ),
-            ],
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.customerSearch,
-            builder: (_, _) => const SearchPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.customerCart,
-            builder: (_, _) => const CartPage(),
-            routes: [
-              GoRoute(
-                path: 'checkout',
-                builder: (_, _) => const CheckoutPage(),
-              ),
-            ],
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.customerOrders,
-            builder: (_, _) => const OrdersPage(),
-            routes: [
-              GoRoute(
-                path: ':id',
-                builder: (_, state) => OrderDetailPage(
-                  orderId: state.pathParameters['id']!,
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.customerSearch,
+              builder: (_, _) => const SearchPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.customerCart,
+              builder: (_, _) => const CartPage(),
+              routes: [
+                GoRoute(
+                  path: 'checkout',
+                  builder: (_, _) => const CheckoutPage(),
                 ),
-              ),
-            ],
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.customerProfile,
-            builder: (_, _) => const ProfilePage(),
-          ),
-        ]),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.customerOrders,
+              builder: (_, _) => const OrdersPage(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) =>
+                      OrderDetailPage(orderId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.customerProfile,
+              builder: (_, _) => const ProfilePage(),
+            ),
+          ],
+        ),
       ],
     ),
 
-    // ===== Boshqa rollar =====
+    // ===== Boshqa rollar (faqat tegishli rol kira oladi) =====
     GoRoute(
       path: AppRoutes.courierHome,
-      builder: (_, _) => const RolePlaceholder('Kuryer'),
+      builder: (_, _) => const RoleGuard(
+        allowed: {UserRole.courier},
+        child: CourierHomePage(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.restaurantHome,
-      builder: (_, _) => const RestaurantHomePage(),
+      builder: (_, _) => const RoleGuard(
+        allowed: {UserRole.restaurant},
+        child: RestaurantHomePage(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.adminHome,
-      builder: (_, _) => const AdminHomePage(),
+      builder: (_, _) =>
+          const RoleGuard(allowed: {UserRole.admin}, child: AdminHomePage()),
     ),
   ],
 );

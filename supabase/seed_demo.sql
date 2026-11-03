@@ -17,43 +17,46 @@ insert into public.categories (id, name, icon, sort_order) values
 on conflict (id) do nothing;
 
 insert into public.restaurants
-  (id, name, description, address, image_url, rating, open_time, close_time) values
+  (id, name, description, address, lat, lng, image_url, rating, open_time, close_time) values
   ('b0000000-0000-4000-8000-000000000001', 'Osh Markazi',
    'Toshkent oshi va milliy taomlar',
-   'Chilonzor, Bunyodkor ko''chasi 12',
+   'Chilonzor, Bunyodkor ko''chasi 12', 41.285000, 69.204000,
    'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=900&q=75',
    4.9, '09:00:00', '22:00:00'),
 
   ('b0000000-0000-4000-8000-000000000002', 'Burger House',
    'Amerika uslubidagi mazali burgerlar',
-   'Yunusobod, Amir Temur shoh ko''chasi 108',
+   'Yunusobod, Amir Temur shoh ko''chasi 108', 41.338000, 69.286000,
    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=75',
    4.7, '10:00:00', '23:00:00'),
 
   ('b0000000-0000-4000-8000-000000000003', 'Pizza Roma',
    'Italyan pitsasi, o''tin pechda pishirilgan',
-   'Mirzo Ulug''bek, Buyuk Ipak yo''li 45',
+   'Mirzo Ulug''bek, Buyuk Ipak yo''li 45', 41.325000, 69.335000,
    'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=75',
    4.6, '11:00:00', '23:30:00'),
 
   ('b0000000-0000-4000-8000-000000000004', 'Sushi Master',
    'Yapon oshxonasi, har kuni yangi sushi',
-   'Shayxontohur, Navoiy ko''chasi 30',
+   'Shayxontohur, Navoiy ko''chasi 30', 41.326000, 69.231000,
    'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=900&q=75',
    4.8, '11:00:00', '22:30:00'),
 
   ('b0000000-0000-4000-8000-000000000005', 'Lavash City',
    'Tez va mazali lavash hamda fastfood',
-   'Sergeli, Yangi Sergeli 4-kvartal',
+   'Sergeli, Yangi Sergeli 4-kvartal', 41.219000, 69.217000,
    'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=900&q=75',
    4.5, '09:00:00', '23:00:00'),
 
   ('b0000000-0000-4000-8000-000000000006', 'Coffee Point',
    'Qahva, desert va ertalabki nonushta',
-   'Yakkasaroy, Shota Rustaveli 22',
+   'Yakkasaroy, Shota Rustaveli 22', 41.292000, 69.262000,
    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=75',
    4.4, '08:00:00', '21:00:00')
-on conflict (id) do nothing;
+on conflict (id) do update
+  set lat = excluded.lat,
+      lng = excluded.lng,
+      address = excluded.address;
 
 insert into public.products
   (id, restaurant_id, category_id, name, price, description, image_url, is_available) values

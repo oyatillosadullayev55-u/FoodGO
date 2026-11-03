@@ -1,196 +1,236 @@
-# 🍔 FoodGo Delivery — Oziq-ovqat va Taom Yetkazib Berish Ekotizimi
+# FoodGo — Taom yetkazib berish tizimi (4 rol)
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.47+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.13+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![State Management](https://img.shields.io/badge/State-Riverpod-0553B1)](https://riverpod.dev)
-[![Backend](https://img.shields.io/badge/Backend-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20Web%20%7C%20iOS-4CAF50)](https://flutter.dev)
+FoodGo — Flutter + Supabase asosida qurilgan taom yetkazib berish platformasi.
+Tizimda to'rt rol bor: **Admin**, **Restoran egasi**, **Kuryer** va **Mijoz**.
+Rollar serverda (`profiles.role`) saqlanadi; mijoz ilovadan rol tanlab
+admin bo'lib kira olmaydi. Admin paneli faqat SQL skriptda ko'rsatilgan
+admin emailiga ega hisob uchun ochiladi.
 
-**FoodGo** — bu zamonaviy, tezkor va ko'p funksiyali taom yetkazib berish platformasi. Loyiha ham **Web sayt**, ham **Android smartfonlar (APK)** uchun to'liq moslashuvchan (responsive) arxitekturada yaratilgan bo'lib, uchta asosiy foydalanuvchi roli — **Mijoz (Customer)**, **Restoran Egasi (Owner)** va **Tizim Administratori (Admin)** imkoniyatlarini o'z ichiga oladi.
+## Rollar va imkoniyatlar
 
----
+| Rol | Panel manzili | Asosiy imkoniyatlar |
+|---|---|---|
+| Admin | `/admin` | Restoran qo'shish/tahrirlash/o'chirish, xaritada joylashuv belgilash, egasi emailini biriktirish, foydalanuvchi rollarini boshqarish, barcha buyurtmalar va statistika |
+| Restoran egasi | `/restaurant` | O'z restorani menyusi (qo'shish/tahrirlash/o'chirish), o'z buyurtmalarini qabul qilish va holatini yangilash |
+| Kuryer | `/courier` | Tayyor buyurtmalarni olish, "olib ketdim" → "yo'lda" → "yetkazildi" bosqichlari, xaritada manzillar |
+| Mijoz | `/customer/home` | Restoranlar katalogi, qidiruv, savat, manzilni xaritada belgilash, buyurtma berish, holatni kuzatish |
 
-## 📌 Asosiy Xususiyatlar
-
-- 🚀 **To'liq 3 Rolli Ekotizim**: Bitta ilovada Mijoz, Restoran Egasi va Admin rollari ajratilgan.
-- ⚡ **Tezkor va To'siqsiz Kirish**: Ro'yxatdan o'tishdagi murakkab to'siqlarsiz, to'g'ridan-to'g'ri o'z rolingizni tanlab tizimga kirish imkoniyati.
-- 🔄 **Tezkor Rol Almashtirgich (`_RoleSwitcherBar`)**: Har qanday sahifaning tepasida 1-chertish orqali Mijoz, Restoran va Admin interfeyslariga o'tish imkoniyati.
-- 📱 **Web va Mobil (APK) Moslashuvchanligi**: `ContentFrame` orqali keng ekranli monitorlarda ham, tor smartfon ekranlarida ham ideal markazlashgan va qulay UI.
-- 🖼️ **Aqlli Taom Rasmlari Tizimi (`FoodImages`)**: Tarmoqdagi xatoliklar yoki bo'sh rasm havolalarida avtomatik ravishda mos Unsplash CDN taom rasmlarini yuklash (Osh, Somsa, Shashlik, Burger, Pitsa, Sushi, Qahva va h.k.).
-- 🎨 **Mavzular**: Tungi (Dark) va Kunduzgi (Light) rejimlarni qo'llab-quvvatlash.
-- 📍 **Jonli Xarita va Buyurtma Holati**: `flutter_map` orqali kuryer va restoran joylashuvi, buyurtma statusini jonli kuzatish.
-
----
-
-## 👥 Foydalanuvchi Rollari (Roles)
+Buyurtma holatlari zanjiri:
 
 ```
-                     ┌────────────────────────┐
-                     │   FoodGo Ekotizimi     │
-                     └───────────┬────────────┘
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   👤 MIJOZ       │    │   🍳 OWNER       │    │   🛡️ ADMIN       │
-│  (Customer)      │    │  (Restoran egasi)│    │  (Administrator) │
-├──────────────────┤    ├──────────────────┤    ├──────────────────┤
-│• Katalog & Izlash│    │• Restoranni      │    │• Yangi restoran  │
-│• Savatcha (Cart) │    │  boshqarish      │    │  hamkor qo'shish │
-│• Buyurtma berish │    │• Taom qo'shish/  │    │• Restoranlarni   │
-│• Jonli kuzatuv   │    │  tahrirlash/     │    │  monitoring va   │
-│• Profil & Sozlama│    │  o'chirish       │    │  o'chirish       │
-│                  │    │• Buyurtma holati-│    │• Tizim umumiy    │
-│                  │    │  ni yangilash    │    │  statistikalari  │
-└──────────────────┘    └──────────────────┘    └──────────────────┘
+pending → accepted → preparing → ready_for_pickup
+        → courier_assigned → picked_up → on_the_way → delivered
 ```
 
-### 1. 👤 Mijoz (Customer)
-* **Asosiy sahifa**: Jonli bannerlar, ommabop restoranlar (Osh Markazi, Burger House va b.), toifalar (Milliy, Burger, Pitsa, Fastfood, Qahva).
-* **Qidiruv va Saralash**: Taom yoki muassasa nomi bo'yicha bir zumda izlash.
-* **Savatcha va To'lov**: Taomlarni bir nechtadan qo'shish, promokod kiritish, to'lov usulini tanlash (*Naqd pul*, *FoodGo Pay*, *Bank kartasi*).
-* **Buyurtmalar**: O'tgan va joriy buyurtmalarni ko'rish, kuryer harakatini bosqichma-bosqich kuzatish (*Qabul qilindi* → *Tayyorlanmoqda* → *Yetkazilmoqda* → *Yetkazildi*).
-* **Profil**: Yetkazib berish manzillari, sevimlilar, FoodGo Plus obunasi va ilova sozlamalari.
+Bekor qilish: mijoz faqat `pending`/`accepted` bosqichida, restoran esa
+yakunlanmagan buyurtmani `rejected`/`cancelled` qilishi mumkin.
 
-### 2. 🍳 Restoran Egasi (Owner)
-* **Restoran tanlash**: O'z muassasasi (masalan, *Osh Markazi*, *Burger House*) profilini tanlab ish yuritish.
-* **Menyu boshqaruvi**: Yangi taomlar qo'shish (nomi, tavsifi, narxi, rasm URL'i, toifasi).
-* **Taomlarni tahrirlash/o'chirish**: Narxlarni o'zgartirish yoki mavjud bo'lmagan taomlarni menyudan olib tashlash.
-* **Buyurtmalar nazorati**: Oshxonaga tushgan buyurtmalarni real vaqt rejimida qabul qilish va ularning holatini bosqichma-bosqich yangilash.
+## Birinchi ishga tushirish (majburiy qadam)
 
-### 3. 🛡️ Tizim Administratori (Admin)
-* **Hamkor restoranlar boshqaruvi**: Yangi restoranlarni ro'yxatdan o'tkazish (nomi, manzili, rasmi, o'rtacha reytingi, ish vaqti).
-* **Katalog nazorati**: Faoliyatini to'xtatgan yoki talabga javob bermaydigan restoranlarni o'chirish.
-* **Platforma monitoringi**: Platformadagi barcha umumiy ko'rsatkichlarni bir joyda kuzatish.
+### 1. Supabase SQL skriptlarini ishga tushirish
 
----
+Supabase Dashboard → **SQL Editor** → **New query**.
 
-## 🛠️ Texnologiyalar Steki
+1. `supabase/seed_demo.sql` — demo restoranlar, kategoriyalar va taomlar
+   (ixtiyoriy, lekin sinash uchun tavsiya etiladi).
+2. `supabase/roles_setup.sql` — **majburiy**: rollar, RLS siyosatlari,
+   `set_order_status` va `claim_order` funksiyalari, demo egaliklar.
 
-| Qism | Texnologiya |
-|---|---|
-| **Dasturlash tili** | Dart 3.13+ |
-| **Freymvork** | Flutter 3.47+ (Null-safety, Material 3) |
-| **State Management** | Riverpod 2.x (`flutter_riverpod`) |
-| **Navigatsiya & Routing** | GoRouter (`go_router`) |
-| **Backend & MB** | Supabase (PostgreSQL, Realtime, Supabase Auth) |
-| **Kesh & Rasmlar** | CachedNetworkImage, Unsplash CDN Fallback |
-| **Xarita** | Flutter Map (`flutter_map`, LatLong2, OpenStreetMap) |
-| **Platformalar** | Web (HTML5/CanvasKit), Android (APK), iOS |
+Tartib muhim: avval `seed_demo.sql`, keyin `roles_setup.sql`.
 
----
+`roles_setup.sql` boshidagi admin emailini o'zingizga moslang:
 
-## 📁 Loyiha Strukturasi
-
-```
-foodgo/
-├── android/                 # Android loyiha konfiguratsiyasi va build fayllari
-├── ios/                     # iOS loyiha fayllari
-├── web/                     # Web sayt uchun index.html, manifest va sozlamalar
-├── supabase/
-│   └── seed_demo.sql        # Demo ma'lumotlar bazasi va jadvallar skripti
-└── lib/
-    ├── app.dart             # Ilovaning kirish nuqtasi va asosiy MaterialApp
-    ├── main.dart            # Flutter ilovani ishga tushiruvchi main()
-    ├── core/                # Umumiy xizmatlar va yordamchilar
-    │   ├── constants/       # Ilova doimiylari
-    │   ├── router/          # GoRouter marshrutlari va sahifalar bog'lanishi
-    │   ├── theme/           # AppColors, AppTheme (Yorug' va Tungi mavzu)
-    │   ├── utils/           # Formatlash, Valyuta (so'm), FoodImages aqlli rasmlar
-    │   └── widgets/         # ContentFrame (Web/APK responsive konteyner), umumiy UI
-    ├── features/            # Alohida funksional modullar
-    │   ├── admin/           # Admin paneli (Restoran qo'shish/o'chirish)
-    │   ├── auth/            # Kirish sahifasi va rollar selektori
-    │   ├── customer/        # Mijoz interfeysi (Home, Search, Cart, Checkout, Orders, Profile)
-    │   ├── restaurant/      # Restoran egasi interfeysi (Menu & Buyurtma boshqaruvi)
-    │   └── splash/          # Splash ochilish ekrani
-    ├── models/              # DTO va ma'lumotlar modellari (Restoran, Mahsulot, Buyurtma)
-    └── repositories/        # Supabase bilan ma'lumot almashish omborlari
+```sql
+when lower(u.email) in ('oyatillosadullayev55@gmail.com', 'admin@foodgo.uz') then 'admin'
 ```
 
----
+Bu satr faylning ikki joyida uchraydi (profil yaratish triggeri va demo
+rollarni biriktirish). Agar boshqa email bilan admin bo'lmoqchi bo'lsangiz,
+ikkalasini ham o'zgartiring va skriptni qayta ishga tushiring.
 
-## 🚀 O'rnatish va Ishga Tushirish
+Tekshirish:
 
-### 1. Repozitoriyani klonlash
-```bash
-git clone https://github.com/oyatillosadullayev55-u/FoodGO.git
-cd FoodGO
+```sql
+select id, email, role from public.profiles order by role, email;
+select name, owner_email, is_active, lat, lng from public.restaurants;
 ```
 
-### 2. Bog'liqliklarni o'rnatish
+### 2. Ilovani ishga tushirish
+
 ```bash
 flutter pub get
+
+flutter run -d chrome \
+  --dart-define=SUPABASE_URL="https://<project-ref>.supabase.co" \
+  --dart-define=SUPABASE_ANON_KEY="<anon-key>"
 ```
 
-### 3. Supabase ma'lumotlar bazasini tayyorlash (Ixtiyoriy)
-Agar o'z shaxsiy Supabase ma'lumotlar bazangizni ulamoqchi bo'lsangiz:
-1. [supabase.com](https://supabase.com) orqali yangi loyiha oching.
-2. `supabase/seed_demo.sql` fayli ichidagi barcha SQL so'rovlarini **SQL Editor** bo'limiga tashlab, **Run** tugmasini bosing.
-3. Loyihangizning `URL` va `ANON_KEY` parametrlarini oling.
+Android qurilmada:
 
----
-
-## 💻 Dasturni Ishga Tushirish
-
-### Web brauzerda ishga tushirish (Chrome / Edge):
 ```bash
-flutter run -d chrome
+flutter run \
+  --dart-define=SUPABASE_URL="https://<project-ref>.supabase.co" \
+  --dart-define=SUPABASE_ANON_KEY="<anon-key>"
 ```
 
-### Android qurilmada yoki Emulyatorda ishga tushirish:
+### 3. Admin sifatida kirish
+
+1. `/login` sahifasiga o'ting.
+2. SQL skriptda admin qilib belgilangan email va parol bilan kiring.
+3. Tizim profildagi rolni o'qib, avtomatik `/admin` paneliga yo'naltiradi.
+4. Boshqa foydalanuvchi `/admin` manzilini ochsa, "Ruxsat yo'q" ekrani
+   chiqadi — bu RLS va rol himoyasi bilan ham tekshiriladi.
+
+## Admin: yangi restoran qo'shish
+
+1. **Admin panel → Restoranlar → Restoran qo'shish**.
+2. Nom, tavsif, manzil va egasi emailini kiriting.
+3. Xaritani bosib restoranning aniq nuqtasini belgilang
+   (koordinatalar pastda ko'rinadi).
+4. **Qo'shish** — restoran `is_active = true` bilan saqlanadi va mijozlar
+   katalogida darhol ko'rinadi (mijoz sahifasini yangilash kifoya).
+5. **Faol** switch orqali restoranni vaqtincha yopish mumkin — yopilgan
+   restoran mijozlarga ko'rinmaydi.
+
+Egasi emailiga ro'yxatdan o'tgan foydalanuvchi biriktirilsa, uning profili
+avtomatik `restaurant` roliga o'tadi (agar u allaqachon ro'yxatdan o'tgan
+bo'lsa). Shu email bilan kirgan foydalanuvchi `/restaurant` panelida faqat
+o'z restoranini ko'radi.
+
+## Restoran egasi
+
+1. Admin panelida restoran yaratilganda **Egasi (email)** maydoniga
+   o'z hisobingiz emailini kiriting.
+2. Shu email bilan `/login` orqali kiring — tizim `/restaurant` paneliga
+   yo'naltiradi.
+3. **Menyu** bo'limida taom qo'shing (nom, narx, tavsif, rasm URL).
+4. **Buyurtmalar** bo'limida yangi buyurtmani tasdiqlang, tayyorlang va
+   "Tayyor" deb belgilang. Shundan keyin buyurtma kuryerlarga ko'rinadi.
+
+## Kuryer
+
+Kuryer hisobini admin **Foydalanuvchilar** bo'limida `Kuryer` rolini berish
+orqali tayinlaydi. Kuryer panelida:
+
+- **Yangi buyurtmalar** — restoran "Tayyor" qilgan va hali biriktirilmagan
+  buyurtmalar. **Buyurtmani olish** tugmasi buyurtmani kuryerga biriktiradi.
+- **Mening yetkazmalarim** — biriktirilgan buyurtmalar va bosqichlar:
+  olib ketdim → yo'lda → yetkazildi.
+- Har bir kartada restoran va mijoz manzili xaritada ko'rsatiladi.
+
+## Mijoz va xarita
+
+- Restoran sahifasida restoranning aniq joylashuvi xaritada chiqadi.
+- Checkout sahifasida xaritani bosib uy joylashuvini belgilash mumkin;
+  koordinatalar buyurtmaga saqlanadi va kuryer/karta ko'rinishida ishlatiladi.
+- Buyurtma tafsilotlarida restoran va yetkazish nuqtasi xaritada ko'rinadi.
+- Buyurtma berish uchun tizimga kirish talab qilinadi. Mehmon foydalanuvchi
+  katalogni ko'ra oladi, lekin checkoutda kirish taklif qilinadi.
+
+## Xavfsizlik
+
+- Rol faqat `profiles.role` dan olinadi; mijoz uni o'zgartira olmaydi.
+- Barcha jadvallarda RLS yoqilgan:
+  - mijoz faqat o'z buyurtmalarini ko'radi;
+  - restoran egasi faqat o'z restorani va buyurtmalarini ko'radi;
+  - kuryer tayyor buyurtmalarni va o'ziga biriktirilganlarni ko'radi;
+  - admin hammasini ko'radi.
+- Buyurtma holati to'g'ridan-to'g'ri `update` bilan emas, `set_order_status`
+  RPC orqali o'zgartiriladi; funksiya rolni va ruxsat etilgan o'tishlarni
+  serverda tekshiradi.
+- Kuryer buyurtmani `claim_order` RPC orqali oladi (poyga holatida ikkinchi
+  kuryer biriktira olmaydi).
+- Admin/restoran/kuryer hisoblari faqat admin tomonidan beriladi; login
+  sahifasida rol tanlash tugmalari yo'q.
+
+## Loyiha strukturasi (asosiy fayllar)
+
+```
+lib/
+├── core/
+│   ├── router/app_router.dart          # Marshrutlar va RoleGuard
+│   ├── widgets/app_map.dart            # flutter_map xarita komponenti
+│   └── widgets/role_guard.dart         # Rol bo'yicha kirish himoyasi
+├── features/
+│   ├── admin/                          # Admin panel (3 tab + xarita editor)
+│   ├── courier/courier_home_page.dart  # Kuryer paneli
+│   ├── restaurant/restaurant_home_page.dart
+│   ├── customer/                       # Mijoz: home, checkout, orders va h.k.
+│   └── auth/                           # Login, register, role gate
+├── models/                             # Restaurant, Product, FoodOrder
+└── repositories/
+    ├── admin_repository.dart
+    ├── delivery_repository.dart        # Owner + courier so'rovlari
+    └── orders_repository.dart
+
+supabase/
+├── seed_demo.sql                       # Demo katalog va koordinatalar
+└── roles_setup.sql                     # Rollar, RLS, RPC, demo egaliklar
+```
+
+## Build va hosting
+
+Web (production):
+
 ```bash
-flutter run
+flutter build web --release \
+  --dart-define=SUPABASE_URL="https://<project-ref>.supabase.co" \
+  --dart-define=SUPABASE_ANON_KEY="<anon-key>"
 ```
 
-### Supabase ma'lumotlari bilan ishga tushirish:
+Natija: `build/web/`. Papkani Firebase Hosting, Vercel, Netlify yoki oddiy
+statik serverga joylashtirish mumkin. Lokal tekshirish:
+
 ```bash
-flutter run -d chrome --dart-define=SUPABASE_URL="SIZNING_SUPABASE_URL" --dart-define=SUPABASE_ANON_KEY="SIZNING_ANON_KEY"
+cd build/web
+python -m http.server 8088
 ```
 
----
+Brauzerda `http://127.0.0.1:8088` oching.
 
-## 📦 Loyihani Build Qilish (Web va APK)
+Android APK:
 
-### 🌐 1. Web sayt uchun to'liq yig'ish (Production Web):
 ```bash
-flutter build web --release
+flutter build apk --release \
+  --dart-define=SUPABASE_URL="https://<project-ref>.supabase.co" \
+  --dart-define=SUPABASE_ANON_KEY="<anon-key>"
 ```
-*Yaratilgan fayllar joyi:* `build/web/`  
-*Ushbu papkadagi fayllarni to'g'ridan-to'g'ri Firebase Hosting, Vercel, Netlify yoki har qanday web hostingga joylashtirishingiz mumkin.*
 
-### 📱 2. Android APK yaratish (O'rnatish uchun tayyor fayl):
-```bash
-# Debug APK yaratish:
-flutter build apk --debug
+## Demo hisoblar
 
-# Yoki to'liq optimallashgan Release APK:
-flutter build apk --release
-```
-*Yaratilgan tayyor APK fayl joyi:*  
-`build/app/outputs/flutter-apk/app-debug.apk` (yoki `app-release.apk`)
+`roles_setup.sql` quyidagi demo hisoblarni tayyorlaydi (parollar repo'da
+saqlanmaydi; ular yaratilganda alohida belgilangan):
 
----
+| Email | Rol | Izoh |
+|---|---|---|
+| `owner.foodgo@example.com` | restaurant | `Osh Markazi` restorani egasi |
+| `courier.foodgo@example.com` | courier | Demo kuryer |
+| `customer.foodgo@example.com` | customer | Demo mijoz |
 
-## 🌟 Rollarni Sinab Ko'rish Qo'llanmasi
+Parolni bilmasangiz, Supabase Dashboard → **Authentication → Users**
+bo'limida foydalanuvchini tanlab parolni yangilang yoki yangi hisob
+yaratib, admin panelidan unga rol bering.
 
-1. Dasturni ishga tushiring.
-2. Kirish sahifasida kerakli rolni bosing:
-   - **Mijoz sifatida kirish** — To'g'ridan-to'g'ri taom buyurtma qilish interfeysi ochiladi.
-   - **Restoran Egasi sifatida kirish** — Menyu va taomlarni boshqarish paneli ochiladi.
-   - **Admin sifatida kirish** — Restoranlarni qo'shish va nazorat qilish paneli ochiladi.
-3. Istalgan paytda sahifaning eng yuqori qismidagi tezkor paneldan boshqa rolga 1-chertish bilan o'tishingiz mumkin!
+## Tez-tez uchraydigan muammolar
 
----
+- **Admin panelda "Ruxsat yo'q"** — `roles_setup.sql` ishga tushirilmagan
+  yoki sizning emailingiz admin ro'yxatida emas. SQL'dagi emailni
+  tekshiring va skriptni qayta ishga tushiring.
+- **Restoranlar katalogda ko'rinmaydi** — restoran `is_active = false`
+  bo'lishi mumkin yoki SQL skript ishga tushirilmagan. Admin panelidan
+  **Faol** switchini tekshiring.
+- **Restoran paneli bo'sh** — admin panelidagi restoranning **Egasi
+  (email)** maydoni sizning login emailingiz bilan bir xil emas.
+- **Xarita bo'sh** — internet aloqasi yoki CARTO/OpenStreetMap tile'lariga
+  kirish cheklangan. Xarita OpenStreetMap ma'lumotlaridan foydalanadi.
+- **Kuryerga buyurtma ko'rinmaydi** — buyurtma hali `ready_for_pickup`
+  holatiga o'tmagan yoki boshqa kuryerga biriktirilgan.
 
-## 👨‍💻 Muallif
+## Muallif
 
-- **Muallif:** Oyatillo
-- **GitHub:** [@oyatillosadullayev55-u](https://github.com/oyatillosadullayev55-u)
-- **Email:** oyatillosadullayev55@gmail.com
+- **Oyatillo** — [@oyatillosadullayev55-u](https://github.com/oyatillosadullayev55-u)
+- Email: oyatillosadullayev55@gmail.com
 
----
+## Litsenziya
 
-## 📄 Litsenziya
-
-Ushbu loyiha ochiq manbali bo'lib, ta'lim va tijoriy maqsadlarda foydalanish uchun taqdim etiladi.
+Ta'lim va tijoriy maqsadlarda foydalanish uchun taqdim etiladi.

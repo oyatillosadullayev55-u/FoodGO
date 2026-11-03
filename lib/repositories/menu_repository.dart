@@ -9,8 +9,11 @@ class MenuRepository {
   final SupabaseClient _client;
 
   Future<Restaurant> fetchRestaurant(String id) async {
-    final data =
-    await _client.from('restaurants').select().eq('id', id).single();
+    final data = await _client
+        .from('restaurants')
+        .select()
+        .eq('id', id)
+        .single();
     return Restaurant.fromMap(data);
   }
 

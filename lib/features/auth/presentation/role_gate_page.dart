@@ -4,15 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
-import '../data/user_profile.dart';
+import '../../../core/widgets/role_guard.dart';
 import '../providers/auth_providers.dart';
-
-String _routeFor(UserRole role) => switch (role) {
-  UserRole.customer => AppRoutes.customerHome,
-  UserRole.courier => AppRoutes.courierHome,
-  UserRole.restaurant => AppRoutes.restaurantHome,
-  UserRole.admin => AppRoutes.adminHome,
-};
 
 class RoleGatePage extends ConsumerWidget {
   const RoleGatePage({super.key});
@@ -27,7 +20,7 @@ class RoleGatePage extends ConsumerWidget {
           loading: () => const CircularProgressIndicator(),
           data: (p) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) context.go(_routeFor(p.role));
+              if (context.mounted) context.go(homeRouteFor(p));
             });
             return const CircularProgressIndicator();
           },

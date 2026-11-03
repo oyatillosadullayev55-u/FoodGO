@@ -15,22 +15,27 @@ class OrdersRepository {
     required String address,
     required String phone,
     String? note,
+    double? lat,
+    double? lng,
     required String idempotencyKey,
   }) async {
-    final result = await _client.rpc('create_order', params: {
-      'p_restaurant_id': restaurantId,
-      'p_items': [
-        for (final i in items)
-          {'product_id': i.product.id, 'quantity': i.quantity},
-      ],
-      'p_address_text': address,
-      'p_lat': null,
-      'p_lng': null,
-      'p_phone': phone,
-      'p_note': (note == null || note.trim().isEmpty) ? null : note.trim(),
-      'p_payment_method': 'cash',
-      'p_idempotency_key': idempotencyKey,
-    });
+    final result = await _client.rpc(
+      'create_order',
+      params: {
+        'p_restaurant_id': restaurantId,
+        'p_items': [
+          for (final i in items)
+            {'product_id': i.product.id, 'quantity': i.quantity},
+        ],
+        'p_address_text': address,
+        'p_lat': lat,
+        'p_lng': lng,
+        'p_phone': phone,
+        'p_note': (note == null || note.trim().isEmpty) ? null : note.trim(),
+        'p_payment_method': 'cash',
+        'p_idempotency_key': idempotencyKey,
+      },
+    );
     return result as String;
   }
 
@@ -39,7 +44,7 @@ class OrdersRepository {
     if (uid == null) throw AuthException('Tizimga kirilmagan');
     final data = await _client
         .from('orders')
-        .select('*, restaurants(name)')
+        .select('*, restaurants(name,address,lat,lng)')
         .eq('customer_id', uid)
         .order('created_at', ascending: false);
     return data.map(FoodOrder.fromMap).toList();
@@ -48,15 +53,17 @@ class OrdersRepository {
   Future<FoodOrder> fetchOrder(String id) async {
     final data = await _client
         .from('orders')
-        .select('*, restaurants(name)')
+        .select('*, restaurants(name,address,lat,lng)')
         .eq('id', id)
         .single();
     return FoodOrder.fromMap(data);
   }
 
   Future<List<OrderLine>> fetchLines(String orderId) async {
-    final data =
-    await _client.from('order_items').select().eq('order_id', orderId);
+    final data = await _client
+        .from('order_items')
+        .select()
+        .eq('order_id', orderId);
     return data.map(OrderLine.fromMap).toList();
   }
 
@@ -71,9 +78,9 @@ class OrdersRepository {
   }
 
   Future<void> cancelOrder(String id) async {
-    await _client.rpc('set_order_status', params: {
-      'p_order_id': id,
-      'p_new_status': 'cancelled',
-    });
+    await _client.rpc(
+      'set_order_status',
+      params: {'p_order_id': id, 'p_new_status': 'cancelled'},
+    );
   }
 }

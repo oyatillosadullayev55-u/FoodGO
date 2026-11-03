@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+
 enum OrderStatus {
   pending('pending', 'Yangi'),
   accepted('accepted', 'Tasdiqlandi'),
@@ -25,6 +27,8 @@ enum OrderStatus {
 
   bool get isFailed =>
       this == OrderStatus.cancelled || this == OrderStatus.rejected;
+
+  bool get isActive => this != OrderStatus.delivered && !isFailed;
 }
 
 class FoodOrder {
@@ -38,7 +42,13 @@ class FoodOrder {
     required this.total,
     required this.createdAt,
     this.restaurantName,
+    this.restaurantAddress,
+    this.restaurantLat,
+    this.restaurantLng,
     this.note,
+    this.courierId,
+    this.lat,
+    this.lng,
   });
 
   final String id;
@@ -50,10 +60,25 @@ class FoodOrder {
   final int total;
   final DateTime createdAt;
   final String? restaurantName;
+  final String? restaurantAddress;
+  final double? restaurantLat;
+  final double? restaurantLng;
   final String? note;
+  final String? courierId;
+  final double? lat;
+  final double? lng;
+
+  LatLng? get restaurantLocation =>
+      (restaurantLat != null && restaurantLng != null)
+          ? LatLng(restaurantLat!, restaurantLng!)
+          : null;
+
+  LatLng? get destination =>
+      (lat != null && lng != null) ? LatLng(lat!, lng!) : null;
 
   factory FoodOrder.fromMap(Map<String, dynamic> map) {
     final restaurant = map['restaurants'];
+    final r = restaurant is Map<String, dynamic> ? restaurant : null;
     return FoodOrder(
       id: map['id'] as String,
       status: OrderStatus.fromString(map['status'] as String?),
@@ -64,9 +89,13 @@ class FoodOrder {
       deliveryFee: (map['delivery_fee'] as num).toInt(),
       total: (map['total'] as num).toInt(),
       createdAt: DateTime.parse(map['created_at'] as String).toLocal(),
-      restaurantName: restaurant is Map<String, dynamic>
-          ? restaurant['name'] as String?
-          : null,
+      restaurantName: r?['name'] as String?,
+      restaurantAddress: r?['address'] as String?,
+      restaurantLat: (r?['lat'] as num?)?.toDouble(),
+      restaurantLng: (r?['lng'] as num?)?.toDouble(),
+      courierId: map['courier_id'] as String?,
+      lat: (map['lat'] as num?)?.toDouble(),
+      lng: (map['lng'] as num?)?.toDouble(),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+
 class Restaurant {
   const Restaurant({
     required this.id,
@@ -8,6 +10,10 @@ class Restaurant {
     this.address,
     this.openTime,
     this.closeTime,
+    this.lat,
+    this.lng,
+    this.isActive = true,
+    this.ownerEmail,
   });
 
   final String id;
@@ -18,6 +24,13 @@ class Restaurant {
   final String? address;
   final String? openTime;
   final String? closeTime;
+  final double? lat;
+  final double? lng;
+  final bool isActive;
+  final String? ownerEmail;
+
+  LatLng? get location =>
+      (lat != null && lng != null) ? LatLng(lat!, lng!) : null;
 
   /// "09:00 - 23:00"
   String? get workingHours {
@@ -37,6 +50,10 @@ class Restaurant {
       address: map['address'] as String?,
       openTime: map['open_time'] as String?,
       closeTime: map['close_time'] as String?,
+      lat: (map['lat'] as num?)?.toDouble(),
+      lng: (map['lng'] as num?)?.toDouble(),
+      isActive: map['is_active'] as bool? ?? true,
+      ownerEmail: map['owner_email'] as String?,
     );
   }
 }

@@ -51,10 +51,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(profileProvider).maybeWhen(
-      data: (p) => p,
-      orElse: () => null,
-    );
+    final profile = ref
+        .watch(profileProvider)
+        .maybeWhen(data: (p) => p, orElse: () => null);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -67,14 +66,14 @@ class _HomePageState extends ConsumerState<HomePage> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             children: [
               // 1. Manzillar va yetkazish vaqti paneli
-              _AddressBar(address: profile?.fullName != null ? 'Toshkent, Amir Temur sh.' : 'Yetkazish manzilini tanlang'),
+              _AddressBar(
+                address: profile?.fullName != null
+                    ? 'Toshkent, Amir Temur sh.'
+                    : 'Yetkazish manzilini tanlang',
+              ),
               const SizedBox(height: 12),
 
-              // 2. Rolni tanlash (Mijoz, Owner, Admin)
-              const _RoleSwitcherBar(),
-              const SizedBox(height: 14),
-
-              // 3. Qidiruv paneli
+              // 2. Qidiruv paneli
               _SearchBar(
                 controller: _search,
                 onChanged: _onSearchChanged,
@@ -103,20 +102,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                 children: [
                   Text(
                     'Restoranlar',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w800, fontSize: 22),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurfaceElevated : AppColors.greyLight,
+                      color: isDark
+                          ? AppColors.darkSurfaceElevated
+                          : AppColors.greyLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.tune_rounded, size: 14, color: AppColors.grey),
+                        Icon(
+                          Icons.tune_rounded,
+                          size: 14,
+                          color: AppColors.grey,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Filter',
@@ -138,110 +144,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ===== Rolni tanlash paneli (Mijoz, Owner, Admin) =====
-class _RoleSwitcherBar extends StatelessWidget {
-  const _RoleSwitcherBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.greyLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : AppColors.borderLight, width: 0.8),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 9),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_rounded, size: 16, color: AppColors.dark),
-                  SizedBox(width: 5),
-                  Text(
-                    'Mijoz',
-                    style: TextStyle(
-                      color: AppColors.dark,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: InkWell(
-              onTap: () => context.push(AppRoutes.restaurantHome),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 9),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.storefront_rounded, size: 16, color: AppColors.grey),
-                    SizedBox(width: 5),
-                    Text(
-                      'Owner',
-                      style: TextStyle(
-                        color: AppColors.grey,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: InkWell(
-              onTap: () => context.push(AppRoutes.adminHome),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 9),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.admin_panel_settings_rounded, size: 16, color: AppColors.grey),
-                    SizedBox(width: 5),
-                    Text(
-                      'Admin',
-                      style: TextStyle(
-                        color: AppColors.grey,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -281,7 +183,11 @@ class _AddressBar extends StatelessWidget {
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.location_on_rounded, size: 18, color: AppColors.dark),
+                    child: const Icon(
+                      Icons.location_on_rounded,
+                      size: 18,
+                      color: AppColors.dark,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -292,16 +198,27 @@ class _AddressBar extends StatelessWidget {
                           children: [
                             Text(
                               'Yetkazish manzili',
-                              style: TextStyle(fontSize: 11, color: AppColors.grey, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.grey,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.grey),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 16,
+                              color: AppColors.grey,
+                            ),
                           ],
                         ),
                         Text(
                           address,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -319,7 +236,9 @@ class _AddressBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: isDark ? Colors.white12 : AppColors.borderLight),
+            border: Border.all(
+              color: isDark ? Colors.white12 : AppColors.borderLight,
+            ),
             boxShadow: [
               if (!isDark)
                 BoxShadow(
@@ -382,15 +301,30 @@ class _SearchBar extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         decoration: InputDecoration(
           hintText: 'Restoran yoki taom qidirish...',
-          hintStyle: const TextStyle(color: AppColors.grey, fontSize: 14, fontWeight: FontWeight.w400),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.dark, size: 22),
+          hintStyle: const TextStyle(
+            color: AppColors.grey,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.dark,
+            size: 22,
+          ),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.grey),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.grey,
+                  ),
                   onPressed: onClear,
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -473,7 +407,10 @@ class _PromoBanners extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
@@ -743,16 +680,15 @@ class _RestaurantList extends ConsumerWidget {
             final columns = constraints.maxWidth >= 980
                 ? 3
                 : constraints.maxWidth >= 620
-                    ? 2
-                    : 1;
+                ? 2
+                : 1;
             if (columns == 1) {
               return Column(
                 children: [
                   for (final r in list)
                     RestaurantCard(
                       restaurant: r,
-                      onTap: () =>
-                          context.push(AppRoutes.restaurantPath(r.id)),
+                      onTap: () => context.push(AppRoutes.restaurantPath(r.id)),
                     ),
                 ],
               );
@@ -768,8 +704,7 @@ class _RestaurantList extends ConsumerWidget {
                     width: cardWidth,
                     child: RestaurantCard(
                       restaurant: r,
-                      onTap: () =>
-                          context.push(AppRoutes.restaurantPath(r.id)),
+                      onTap: () => context.push(AppRoutes.restaurantPath(r.id)),
                     ),
                   ),
               ],

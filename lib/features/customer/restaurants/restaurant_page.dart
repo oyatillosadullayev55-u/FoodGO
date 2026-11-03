@@ -9,6 +9,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/app_map.dart';
 import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
@@ -173,14 +174,18 @@ class _Header extends StatelessWidget {
                     Expanded(
                       child: Text(
                         r.name,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
                               fontWeight: FontWeight.w900,
                               fontSize: 22,
                             ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(10),
@@ -188,7 +193,11 @@ class _Header extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star_rounded, size: 16, color: AppColors.dark),
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: AppColors.dark,
+                          ),
                           const SizedBox(width: 3),
                           Text(
                             r.rating.toStringAsFixed(1),
@@ -207,7 +216,10 @@ class _Header extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     r.description!,
-                    style: const TextStyle(color: AppColors.grey, fontSize: 13.5),
+                    style: const TextStyle(
+                      color: AppColors.grey,
+                      fontSize: 13.5,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 14),
@@ -216,11 +228,7 @@ class _Header extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _badge(
-                      Icons.schedule_rounded,
-                      '20–30 daq',
-                      isDark: isDark,
-                    ),
+                    _badge(Icons.schedule_rounded, '20–30 daq', isDark: isDark),
                     _badge(
                       Icons.delivery_dining_rounded,
                       'Yetkazish ${formatSom(kDeliveryFee)}',
@@ -238,17 +246,40 @@ class _Header extends StatelessWidget {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, size: 16, color: AppColors.grey),
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: AppColors.grey,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           r.address!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: AppColors.grey, fontSize: 12.5),
+                          style: const TextStyle(
+                            color: AppColors.grey,
+                            fontSize: 12.5,
+                          ),
                         ),
                       ),
                     ],
+                  ),
+                ],
+                if (r.location != null) ...[
+                  const SizedBox(height: 12),
+                  AppMap(
+                    points: [
+                      MapPoint(
+                        point: r.location!,
+                        icon: Icons.storefront_rounded,
+                        color: AppColors.primary,
+                        label: r.name,
+                      ),
+                    ],
+                    zoom: 15,
+                    height: 170,
+                    interactive: false,
                   ),
                 ],
               ],
@@ -273,10 +304,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -307,10 +335,8 @@ class _Menu extends StatelessWidget {
               children: [
                 Text(
                   entry.key,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 19,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800, fontSize: 19),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -382,7 +408,10 @@ class _CartBar extends ConsumerWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.dark,
                         borderRadius: BorderRadius.circular(10),
@@ -418,7 +447,11 @@ class _CartBar extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_rounded, color: AppColors.dark, size: 20),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.dark,
+                      size: 20,
+                    ),
                   ],
                 ),
               ],

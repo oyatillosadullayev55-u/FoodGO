@@ -17,83 +17,75 @@ class AuthRepository {
     required String fullName,
     required String phone,
   }) async {
-    try {
-      final res = await _client.auth.signUp(
-        email: email,
-        password: password,
-        data: {'full_name': fullName, 'phone': phone},
-      );
-      return res.session != null;
-    } catch (e) {
-      try {
-        await _client.auth.signInWithPassword(email: email, password: password);
-        return true;
-      } catch (_) {
-        return true;
-      }
-    }
+    final res = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': fullName, 'phone': phone},
+    );
+    return res.session != null;
   }
 
   Future<void> signIn({
     required String email,
     required String password,
   }) async {
-    try {
-      await _client.auth.signInWithPassword(email: email, password: password);
-    } catch (e) {
-      try {
-        await _client.auth.signUp(
-          email: email,
-          password: password,
-          data: {'full_name': 'Foydalanuvchi', 'phone': ''},
-        );
-      } catch (_) {
-        // Ignore and let user proceed
-      }
-    }
+    await _client.auth.signInWithPassword(email: email, password: password);
   }
 
   Future<void> resetPassword(String email) async {
-    try {
-      await _client.auth.resetPasswordForEmail(email);
-    } catch (_) {}
+    await _client.auth.resetPasswordForEmail(email);
   }
 
   Future<void> signOut() => _client.auth.signOut();
 
+  /// Rol serverdagi `profiles.role` dan olinadi — mijoz uni o'zgartira olmaydi.
   Future<UserProfile> fetchProfile() async {
     final user = _client.auth.currentUser;
     final uid = user?.id;
     final email = user?.email?.toLowerCase();
 
-    if (email == 'oyatillosadullayev55@gmail.com' || email == 'admin@foodgo.uz') {
-      return UserProfile(
-        id: uid ?? 'admin_user',
-        role: UserRole.admin,
-        fullName: 'Oyatillo (Admin)',
-        phone: user?.userMetadata?['phone'] as String?,
-      );
-    }
-
     if (uid == null) {
       return const UserProfile(
         id: 'guest_user',
         role: UserRole.customer,
-        fullName: 'Foydalanuvchi',
-        phone: '+998901234567',
+        fullName: 'Mehmon',
       );
     }
+
+    Map<String, dynamic>? data;
     try {
-      final data =
-      await _client.from('profiles').select().eq('id', uid).single();
-      return UserProfile.fromMap(data);
+      data = await _client
+          .from('profiles')
+          .select()
+          .eq('id', uid)
+          .maybeSingle();
     } catch (_) {
-      return UserProfile(
-        id: uid,
-        role: UserRole.customer,
-        fullName: user?.userMetadata?['full_name'] as String? ?? 'Foydalanuvchi',
-        phone: user?.userMetadata?['phone'] as String?,
-      );
+      // Profil hali yaratilmagan bo'lsa, pastdagi zaxira qiymat ishlatiladi.
     }
+
+    var ownsRestaurant = false;
+    if (email != null && email.isNotEmpty) {
+      try {
+        final rows = await _client
+            .from('restaurants')
+            .select('id')
+            .eq('owner_email', email)
+            .limit(1);
+        ownsRestaurant = rows.isNotEmpty;
+      } catch (_) {}
+    }
+
+    return UserProfile(
+      id: uid,
+      role: data == null
+          ? UserRole.customer
+          : UserRole.fromString(data['role'] as String?),
+      fullName: data?['full_name'] as String? ??
+          user?.userMetadata?['full_name'] as String?,
+      phone: data?['phone'] as String? ??
+          user?.userMetadata?['phone'] as String?,
+      email: data?['email'] as String? ?? email,
+      ownsRestaurant: ownsRestaurant,
+    );
   }
 }
