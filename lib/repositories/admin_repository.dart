@@ -106,10 +106,7 @@ class AdminRepository {
   }
 
   Future<List<UserProfile>> fetchUsers() async {
-    final data = await _client
-        .from('profiles')
-        .select()
-        .order('created_at', ascending: false);
+    final data = await _client.from('profiles').select();
     return (data as List).map((e) {
       return UserProfile.fromMap(e as Map<String, dynamic>);
     }).toList();
