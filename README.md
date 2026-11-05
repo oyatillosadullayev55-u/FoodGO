@@ -169,6 +169,11 @@ orqali tayinlaydi. Kuryer panelida:
   (`flutter run -d chrome --web-hostname 0.0.0.0 --web-port 8088`) va
   `http://<kompyuter-ip>:8088` ni ham ruxsat etilgan manzillar ro'yxatiga
   qo'shing.
+- Standart email xizmatida soatiga 2–4 ta xat cheklovi bor; tez-tez so'rov
+  yuborsangiz server `unexpected_failure / Error sending recovery email` bilan
+  qaytaradi. Doimiy yechim: Dashboard → **Settings → Authentication → SMTP**
+  bo'limida o'z SMTP'ni sozlash (masalan Gmail: `smtp.gmail.com`, port 465,
+  16 xonali App Password — myaccount.google.com/apppasswords).
 
 ## Xavfsizlik
 

@@ -48,6 +48,15 @@ String friendlyError(Object error) {
           'xizmatida soatiga bir nechta xat yuboriladi — birozdan keyin qayta '
           "urinib ko'ring yoki Dashboard'da shaxsiy SMTP sozlang.";
     }
+    if (m.contains('unexpected_failure') ||
+        m.contains('error sending') ||
+        m.contains('recovery email')) {
+      return "Tiklash xati yuborilmadi — Supabase'ning standart email "
+          "xizmatida cheklov yoki vaqtinchalik muammo bor. 15–30 daqiqa "
+          "kutib qayta urinib ko'ring. Doimiy yechim: Supabase Dashboard → "
+          "Settings → Authentication → SMTP bo'limida o'z Gmail/SendGrid "
+          'SMTP manzilini sozlang.';
+    }
     if (m.contains('email sending') || m.contains('smtp')) {
       return "Email yuborish sozlanmagan. Supabase Dashboard → "
           'Authentication → Emails/SMTP bo\'limini tekshiring.';
