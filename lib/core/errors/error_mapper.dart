@@ -12,8 +12,21 @@ String friendlyError(Object error) {
         m.contains('already been registered')) {
       return 'Bu email bilan hisob allaqachon mavjud. Iltimos, tizimga kiring yoki parolni tiklang.';
     }
+    if (m.contains('should be different')) {
+      return 'Yangi parol eskisidan farq qilishi kerak';
+    }
     if (m.contains('password') && m.contains('characters')) {
       return "Parol kamida 6 ta belgidan iborat bo'lsin";
+    }
+    if (m.contains('weak password') || m.contains('password is too weak')) {
+      return "Parol juda oddiy. Harflar va raqamlardan iborat murakkabroq "
+          "parol o'rnating.";
+    }
+    if (m.contains('auth session missing') || m.contains('session missing')) {
+      return "Sessiya topilmadi. Parolni tiklash havolasini qaytadan oling.";
+    }
+    if (m.contains('expired') || m.contains('invalid token')) {
+      return "Havola eskirgan yoki yaroqsiz. Yangi tiklash havolasini oling.";
     }
     if (m.contains('email not confirmed') ||
         m.contains('email not verified') ||

@@ -100,18 +100,67 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _forgotPassword() async {
-    final email = _email.text.trim();
+    final controller = TextEditingController(text: _email.text.trim());
+    final email = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Parolni tiklash'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Email manzilingizni kiriting — parolni yangilash havolasini '
+              'yuboramiz.',
+              style: TextStyle(fontSize: 13.5, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Email manzil',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Bekor qilish'),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text.trim()),
+            child: const Text('Yuborish'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (!mounted || email == null) return;
+
     if (email.isEmpty || !email.contains('@')) {
-      _showMessage('Avval email manzilingizni kiriting');
+      _showMessage("To'g'ri email manzil kiriting");
       return;
     }
+
+    setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).resetPassword(email);
+      _email.text = email;
       if (mounted) {
-        _showMessage('Parolni tiklash havolasi $email ga yuborildi.');
+        _showMessage(
+          'Tiklash havolasi $email ga yuborildi. Xatdagi havolani bosib, '
+          'yangi parol o\'rnatasiz.',
+        );
       }
     } catch (e) {
       if (mounted) _showMessage(friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 

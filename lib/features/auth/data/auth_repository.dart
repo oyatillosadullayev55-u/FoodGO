@@ -106,7 +106,17 @@ class AuthRepository {
   }
 
   Future<void> resetPassword(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    final base = Uri.base;
+    final isHttp = base.scheme == 'http' || base.scheme == 'https';
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: isHttp ? '${base.origin}/' : null,
+    );
+  }
+
+  /// Tiklash havolasidan kelgan sessiya uchun yangi parol o'rnatadi.
+  Future<void> updatePassword(String password) async {
+    await _client.auth.updateUser(UserAttributes(password: password));
   }
 
   Future<void> signOut() => _client.auth.signOut();

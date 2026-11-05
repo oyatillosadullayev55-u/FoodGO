@@ -143,8 +143,14 @@ orqali tayinlaydi. Kuryer panelida:
   Tezkor (tasdiqlashsiz) ro'yxatdan o'tish uchun Supabase Dashboard →
   **Authentication → Sign In / Providers → Email → Confirm email** ni o'chirib
   saqlang.
-- Login sahifasida **"Parolni unutdingizmi?"** havolasi bor — u parolni
-  tiklash xatini yuboradi.
+- Login sahifasida **"Parolni unutdingizmi?"** havolasi bor — u emailni so'rab,
+  parolni tiklash xatini yuboradi. Xatdagi havola ilovadagi **Yangi parol**
+  sahifasini ochadi; yangi parol ikki marta kiritilib, `updateUser` orqali
+  saqlanadi.
+- Tiklash havolasi to'g'ri ochilishi uchun Supabase Dashboard →
+  **Authentication → URL Configuration** bo'limida **Site URL** va
+  **Redirect URLs** ga ilova manzilini qo'shing (masalan,
+  `http://127.0.0.1:8088` va hosting domeningiz).
 
 ## Xavfsizlik
 

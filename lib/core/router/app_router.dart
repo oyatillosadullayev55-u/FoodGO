@@ -5,6 +5,7 @@ import '../../features/admin/admin_home_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/onboarding_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/auth/presentation/reset_password_page.dart';
 import '../../features/auth/presentation/role_gate_page.dart';
 import '../../features/auth/presentation/splash_page.dart';
 import '../../features/auth/data/user_profile.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
+  static const resetPassword = '/reset-password';
   static const gate = '/gate';
 
   static const customerHome = '/customer/home';
@@ -53,6 +55,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
     GoRoute(path: AppRoutes.register, builder: (_, _) => const RegisterPage()),
+    GoRoute(
+      path: AppRoutes.resetPassword,
+      builder: (_, _) => const ResetPasswordPage(),
+    ),
     GoRoute(path: AppRoutes.gate, builder: (_, _) => const RoleGatePage()),
 
     // ===== Mijoz: pastki navigatsiya =====

@@ -13,12 +13,23 @@ Future<void> main() async {
     return;
   }
 
+  // Supabase havolani o'qib, URL'dagi tokenni tozalaydi — shuning uchun
+  // tiklash havolasidan kelganini oldindan belgilab olamiz.
+  final fromRecoveryLink = _isPasswordRecoveryLink();
+
   await Supabase.initialize(
     url: Env.supabaseUrl,
     publishableKey: Env.supabaseAnonKey,
   );
 
-  runApp(const ProviderScope(child: FoodGoApp()));
+  runApp(ProviderScope(child: FoodGoApp(initialRecovery: fromRecoveryLink)));
+}
+
+bool _isPasswordRecoveryLink() {
+  final uri = Uri.base;
+  final fragment = Uri.splitQueryString(uri.fragment);
+  if (fragment['type'] == 'recovery') return true;
+  return uri.queryParameters['type'] == 'recovery';
 }
 
 class _ConfigErrorApp extends StatelessWidget {
@@ -34,8 +45,8 @@ class _ConfigErrorApp extends StatelessWidget {
             padding: EdgeInsets.all(24),
             child: Text(
               'Supabase sozlanmagan.\n\n'
-                  'Ilovani --dart-define=SUPABASE_URL=... va '
-                  '--dart-define=SUPABASE_ANON_KEY=... bilan ishga tushiring.',
+              'Ilovani --dart-define=SUPABASE_URL=... va '
+              '--dart-define=SUPABASE_ANON_KEY=... bilan ishga tushiring.',
               textAlign: TextAlign.center,
             ),
           ),
