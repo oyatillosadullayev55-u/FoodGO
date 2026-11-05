@@ -42,6 +42,28 @@ String friendlyError(Object error) {
       return "Ro'yxatdan o'tish vaqtincha o'chirilgan. Supabase Auth "
           'sozlamalarida Email provider yoqilganini tekshiring.';
     }
+    if (m.contains('email rate limit') ||
+        m.contains('over_email_send_rate_limit')) {
+      return "Email yuborish cheklovi tugdi. Supabase'ning standart email "
+          'xizmatida soatiga bir nechta xat yuboriladi — birozdan keyin qayta '
+          "urinib ko'ring yoki Dashboard'da shaxsiy SMTP sozlang.";
+    }
+    if (m.contains('email sending') || m.contains('smtp')) {
+      return "Email yuborish sozlanmagan. Supabase Dashboard → "
+          'Authentication → Emails/SMTP bo\'limini tekshiring.';
+    }
+    if (m.contains('redirect') &&
+        (m.contains('not allowed') || m.contains('invalid'))) {
+      return 'Tiklash havolasi uchun ruxsat berilmagan manzil. Supabase → '
+          'Authentication → URL Configuration bo\'limida Site URL va Redirect '
+          "URLs ga ilova manzilini qo'shing.";
+    }
+    if (m.contains('user not found')) {
+      return "Bu email bilan hisob topilmadi. Avval ro'yxatdan o'ting.";
+    }
+    if (m.contains('unable to validate email') || m.contains('invalid email')) {
+      return "Email manzil noto'g'ri kiritilgan.";
+    }
     if (m.contains('rate limit') || m.contains('too many')) {
       return "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring";
     }

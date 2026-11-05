@@ -100,46 +100,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _forgotPassword() async {
-    final controller = TextEditingController(text: _email.text.trim());
     final email = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Parolni tiklash'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Email manzilingizni kiriting — parolni yangilash havolasini '
-              'yuboramiz.',
-              style: TextStyle(fontSize: 13.5, height: 1.4),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.emailAddress,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Email manzil',
-                prefixIcon: Icon(Icons.email_outlined),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Bekor qilish'),
-          ),
-          ElevatedButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(controller.text.trim()),
-            child: const Text('Yuborish'),
-          ),
-        ],
-      ),
+      builder: (_) => _ForgotPasswordDialog(initialEmail: _email.text.trim()),
     );
-    controller.dispose();
     if (!mounted || email == null) return;
 
     if (email.isEmpty || !email.contains('@')) {
@@ -382,6 +346,66 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ForgotPasswordDialog extends StatefulWidget {
+  const _ForgotPasswordDialog({required this.initialEmail});
+
+  final String initialEmail;
+
+  @override
+  State<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialEmail,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Parolni tiklash'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Email manzilingizni kiriting — parolni yangilash havolasini '
+            'yuboramiz.',
+            style: TextStyle(fontSize: 13.5, height: 1.4),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.emailAddress,
+            autofocus: true,
+            onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
+            decoration: const InputDecoration(
+              hintText: 'Email manzil',
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Bekor qilish'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text('Yuborish'),
+        ),
+      ],
     );
   }
 }

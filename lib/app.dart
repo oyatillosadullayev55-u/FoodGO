@@ -7,11 +7,18 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
 class FoodGoApp extends StatefulWidget {
-  const FoodGoApp({super.key, this.initialRecovery = false});
+  const FoodGoApp({
+    super.key,
+    this.initialRecovery = false,
+    this.recoveryLinkError,
+  });
 
   /// Tiklash havolasi orqali ochilgan bo'lsa, ilova darhol yangi parol
   /// sahifasini ko'rsatadi.
   final bool initialRecovery;
+
+  /// Havola eskirgan/bekor qilingan bo'lsa, Supabase qaytargan xabar.
+  final String? recoveryLinkError;
 
   /// Web/desktopda ilova keng ekranga cho'zilib ketmasligi uchun
   /// kontent markazda, cheklangan kenglikda ko'rsatiladi.
@@ -28,12 +35,21 @@ class _FoodGoAppState extends State<FoodGoApp> {
   void initState() {
     super.initState();
     // Supabase havoladan sessiyani tiklaganda shu hodisa keladi.
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((state) {
-      if (state.event == AuthChangeEvent.passwordRecovery) {
-        appRouter.go(AppRoutes.resetPassword);
-      }
-    });
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
+      (state) {
+        if (state.event == AuthChangeEvent.passwordRecovery) {
+          appRouter.go(AppRoutes.resetPassword);
+        }
+      },
+      // Token yangilashdagi xatolar oqimda xato sifatida keladi — ushlab
+      // olinmasa, ular "Uncaught" bo'lib konsolga chiqadi.
+      onError: (Object _) {},
+    );
     if (widget.initialRecovery) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        appRouter.go(AppRoutes.resetPassword);
+      });
+    } else if (widget.recoveryLinkError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         appRouter.go(AppRoutes.resetPassword);
       });

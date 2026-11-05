@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/constants/env.dart';
+import 'core/utils/auth_link.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,40 +14,64 @@ Future<void> main() async {
     return;
   }
 
-  // Supabase havolani o'qib, URL'dagi tokenni tozalaydi — shuning uchun
-  // tiklash havolasidan kelganini oldindan belgilab olamiz.
-  final fromRecoveryLink = _isPasswordRecoveryLink();
+  // Havoladan kelgan ma'lumotni Supabase o'qib tozalashidan oldin saqlaymiz.
+  final fromRecoveryLink = isPasswordRecoveryLink();
+  final linkError = passwordRecoveryLinkError();
 
-  await Supabase.initialize(
-    url: Env.supabaseUrl,
-    publishableKey: Env.supabaseAnonKey,
+  // Buzilgan havola GoRouter'ni chalg'itmasligi uchun avval tozalanadi.
+  if (linkError != null) cleanAuthLinkFromAddressBar();
+
+  try {
+    await Supabase.initialize(
+      url: Env.supabaseUrl,
+      publishableKey: Env.supabaseAnonKey,
+    );
+  } catch (e) {
+    // Buzilgan tiklash havolasi tufayli yiqilgan bo'lsa, manzilni tozalab
+    // sahifani qayta yuklaymiz — aks holda ilova xato ekranida qotib qoladi.
+    if (fromRecoveryLink || linkError != null) {
+      cleanAuthLinkFromAddressBar();
+      reloadPage();
+      return;
+    }
+    runApp(
+      _ConfigErrorApp(message: 'Supabase ulanishida xatolik yuz berdi:\n$e'),
+    );
+    return;
+  }
+
+  // Sessiya o'qilgach tokenni manzil qatoridan olib tashlaymiz.
+  if (linkError == null) cleanAuthLinkFromAddressBar();
+
+  runApp(
+    ProviderScope(
+      child: FoodGoApp(
+        initialRecovery: fromRecoveryLink,
+        recoveryLinkError: linkError,
+      ),
+    ),
   );
-
-  runApp(ProviderScope(child: FoodGoApp(initialRecovery: fromRecoveryLink)));
-}
-
-bool _isPasswordRecoveryLink() {
-  final uri = Uri.base;
-  final fragment = Uri.splitQueryString(uri.fragment);
-  if (fragment['type'] == 'recovery') return true;
-  return uri.queryParameters['type'] == 'recovery';
 }
 
 class _ConfigErrorApp extends StatelessWidget {
-  const _ConfigErrorApp();
+  const _ConfigErrorApp({this.message});
+
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Text(
-              'Supabase sozlanmagan.\n\n'
-              'Ilovani --dart-define=SUPABASE_URL=... va '
-              '--dart-define=SUPABASE_ANON_KEY=... bilan ishga tushiring.',
+              message ??
+                  'Supabase sozlanmagan.\n\n'
+                      'Ilovani --dart-define=SUPABASE_URL=... va '
+                      '--dart-define=SUPABASE_ANON_KEY=... bilan ishga '
+                      'tushiring.',
               textAlign: TextAlign.center,
             ),
           ),
