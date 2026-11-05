@@ -122,9 +122,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           title: const Text('Xat yuborildi'),
           content: Text(
             '$email manziliga tiklash xati yuborildi.\n\n'
-            "Havolani bosishingiz mumkin, lekin u faqat ilova ochiq turgan "
-            "qurilmada ishlaydi. Telefondan tiklayotgan bo'lsangiz, xatdagi "
-            '6 xonali kodni kiriting.',
+            "1) Xatdagi havolani ilova ochiq turgan kompyuterda oching.\n"
+            "2) Xatda 6 xonali kod ham bo'lsa, uni shu yerga kiritib, "
+            'telefondan ham yangilashingiz mumkin.',
           ),
           actions: [
             TextButton(

@@ -58,6 +58,12 @@ String friendlyError(Object error) {
           'Authentication → URL Configuration bo\'limida Site URL va Redirect '
           "URLs ga ilova manzilini qo'shing.";
     }
+    if (m.contains('security purposes') || m.contains('only request this')) {
+      final sec = RegExp(r'after (\d+) seconds?').firstMatch(m)?.group(1);
+      return sec == null
+          ? "Xavfsizlik uchun birozdan keyin qayta urinib ko'ring."
+          : 'Xavfsizlik uchun $sec soniyadan keyin qayta yuborish mumkin.';
+    }
     if (m.contains('user not found')) {
       return "Bu email bilan hisob topilmadi. Avval ro'yxatdan o'ting.";
     }
