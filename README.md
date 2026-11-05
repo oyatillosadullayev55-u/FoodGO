@@ -127,6 +127,25 @@ orqali tayinlaydi. Kuryer panelida:
 - Buyurtma berish uchun tizimga kirish talab qilinadi. Mehmon foydalanuvchi
   katalogni ko'ra oladi, lekin checkoutda kirish taklif qilinadi.
 
+## Ro'yxatdan o'tish va kirish
+
+- Ro'yxatdan o'tishda ism, telefon, email va parol (ikki marta) kiritiladi.
+  Yangi hisob har doim **Mijoz** roli bilan yaratiladi.
+- Ro'yxatdan o'tgach, ilova **"Qaysi sahifaga o'tamiz?"** deb so'raydi:
+  Bosh sahifa, Buyurtmalarim, Savatcha yoki Profil. Admin/restoran/kuryer
+  paneli faqat shu rolga ega hisoblarga taklif qilinadi.
+- Agar email allaqachon ro'yxatdan o'tgan bo'lsa, ilova shu email va parol
+  bilan kirishga urinadi; parol mos kelmasa **"Parolni tiklash"** taklif
+  qilinadi. Qayta ro'yxatdan o'tishga urinish shart emas.
+- **Muhim:** Supabase'da *Confirm email* yoqilgan bo'lsa, hisob yaratilgach
+  foydalanuvchi avval emailidagi havolani bosishi kerak. Ilova buni aniqlab,
+  "Emailingizni tasdiqlang" oynasida **Qayta yuborish** tugmasini beradi.
+  Tezkor (tasdiqlashsiz) ro'yxatdan o'tish uchun Supabase Dashboard →
+  **Authentication → Sign In / Providers → Email → Confirm email** ni o'chirib
+  saqlang.
+- Login sahifasida **"Parolni unutdingizmi?"** havolasi bor — u parolni
+  tiklash xatini yuboradi.
+
 ## Xavfsizlik
 
 - Rol faqat `profiles.role` dan olinadi; mijoz uni o'zgartira olmaydi.

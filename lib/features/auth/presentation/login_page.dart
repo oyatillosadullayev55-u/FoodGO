@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
@@ -41,12 +42,83 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (mounted) context.go(AppRoutes.gate);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(friendlyError(e))));
+        if (_isEmailNotConfirmed(e)) {
+          await _showUnconfirmedDialog();
+        } else {
+          _showMessage(friendlyError(e));
+        }
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  bool _isEmailNotConfirmed(Object error) {
+    if (error is! AuthException) return false;
+    final m = error.message.toLowerCase();
+    return m.contains('email not confirmed') ||
+        m.contains('email not verified') ||
+        m.contains('not confirmed');
+  }
+
+  Future<void> _showUnconfirmedDialog() async {
+    final resend = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Email tasdiqlanmagan'),
+        content: Text(
+          '${_email.text.trim()} manzili hali tasdiqlanmagan. '
+          'Emailingizga yuborilgan havolani bosing.\n\n'
+          'Xat kelmagan bo\'lsa, qayta yuborishimiz mumkin.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Bekor qilish'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Qayta yuborish'),
+          ),
+        ],
+      ),
+    );
+    if (resend != true || !mounted) return;
+
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .resendConfirmation(_email.text.trim());
+      if (mounted) {
+        _showMessage(
+          'Tasdiqlash xati qayta yuborildi. Emailingizni tekshiring.',
+        );
+      }
+    } catch (e) {
+      if (mounted) _showMessage(friendlyError(e));
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _email.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      _showMessage('Avval email manzilingizni kiriting');
+      return;
+    }
+    try {
+      await ref.read(authRepositoryProvider).resetPassword(email);
+      if (mounted) {
+        _showMessage('Parolni tiklash havolasi $email ga yuborildi.');
+      }
+    } catch (e) {
+      if (mounted) _showMessage(friendlyError(e));
+    }
+  }
+
+  void _showMessage(String text) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -155,7 +227,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                             validator: Validators.password,
                           ),
-                          const SizedBox(height: 18),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _loading ? null : _forgotPassword,
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.dark,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                minimumSize: const Size(0, 32),
+                              ),
+                              child: const Text(
+                                'Parolni unutdingizmi?',
+                                style: TextStyle(fontSize: 12.5),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(

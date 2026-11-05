@@ -2,6 +2,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'user_profile.dart';
 
+/// Ro'yxatdan o'tish natijasi.
+enum SignUpStatus {
+  /// Sessiya ochildi — foydalanuvchi darhol tizimga kirdi.
+  signedIn,
+
+  /// Hisob yaratildi, lekin Supabase email tasdiqlashni talab qilmoqda.
+  needsConfirmation,
+
+  /// Bu email allaqachon ro'yxatdan o'tgan, parol esa mos kelmadi.
+  emailTaken,
+}
+
+class SignUpResult {
+  const SignUpResult(this.status);
+
+  final SignUpStatus status;
+}
+
+enum _SignInAttempt { ok, unconfirmed, rejected }
+
 class AuthRepository {
   AuthRepository(this._client);
 
@@ -9,26 +29,79 @@ class AuthRepository {
 
   Session? get currentSession => _client.auth.currentSession;
 
-  /// true qaytsa, foydalanuvchi darhol tizimga kirdi.
-  /// false bo'lsa, email tasdiqlash kerak.
-  Future<bool> signUp({
+  Future<SignUpResult> signUp({
     required String email,
     required String password,
     required String fullName,
     required String phone,
   }) async {
-    final res = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'full_name': fullName, 'phone': phone},
-    );
-    return res.session != null;
+    AuthResponse res;
+    try {
+      res = await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': fullName, 'phone': phone},
+      );
+    } on AuthException catch (e) {
+      if (e.message.toLowerCase().contains('already registered')) {
+        return _resolveExistingAccount(email, password);
+      }
+      rethrow;
+    }
+
+    if (res.session != null) {
+      return const SignUpResult(SignUpStatus.signedIn);
+    }
+
+    // Supabase email mavjudligini yashirish uchun bo'sh identities qaytaradi.
+    final exists = res.user?.identities?.isEmpty ?? false;
+
+    switch (await _trySignIn(email, password)) {
+      case _SignInAttempt.ok:
+        return const SignUpResult(SignUpStatus.signedIn);
+      case _SignInAttempt.unconfirmed:
+        return const SignUpResult(SignUpStatus.needsConfirmation);
+      case _SignInAttempt.rejected:
+        return SignUpResult(
+          exists ? SignUpStatus.emailTaken : SignUpStatus.needsConfirmation,
+        );
+    }
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<SignUpResult> _resolveExistingAccount(
+    String email,
+    String password,
+  ) async {
+    switch (await _trySignIn(email, password)) {
+      case _SignInAttempt.ok:
+        return const SignUpResult(SignUpStatus.signedIn);
+      case _SignInAttempt.unconfirmed:
+        return const SignUpResult(SignUpStatus.needsConfirmation);
+      case _SignInAttempt.rejected:
+        return const SignUpResult(SignUpStatus.emailTaken);
+    }
+  }
+
+  Future<_SignInAttempt> _trySignIn(String email, String password) async {
+    try {
+      await _client.auth.signInWithPassword(email: email, password: password);
+      return _SignInAttempt.ok;
+    } on AuthException catch (e) {
+      final m = e.message.toLowerCase();
+      if (m.contains('email not confirmed') ||
+          m.contains('email not verified') ||
+          m.contains('not confirmed')) {
+        return _SignInAttempt.unconfirmed;
+      }
+      return _SignInAttempt.rejected;
+    }
+  }
+
+  Future<void> resendConfirmation(String email) async {
+    await _client.auth.resend(email: email, type: OtpType.signup);
+  }
+
+  Future<void> signIn({required String email, required String password}) async {
     await _client.auth.signInWithPassword(email: email, password: password);
   }
 
@@ -80,10 +153,11 @@ class AuthRepository {
       role: data == null
           ? UserRole.customer
           : UserRole.fromString(data['role'] as String?),
-      fullName: data?['full_name'] as String? ??
+      fullName:
+          data?['full_name'] as String? ??
           user?.userMetadata?['full_name'] as String?,
-      phone: data?['phone'] as String? ??
-          user?.userMetadata?['phone'] as String?,
+      phone:
+          data?['phone'] as String? ?? user?.userMetadata?['phone'] as String?,
       email: data?['email'] as String? ?? email,
       ownsRestaurant: ownsRestaurant,
     );
