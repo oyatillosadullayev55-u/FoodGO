@@ -156,6 +156,7 @@ class _Header extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: FoodImages.getRestaurantImage(r.name, r.imageUrl),
               fit: BoxFit.cover,
+              memCacheWidth: 900,
               placeholder: (_, _) => Container(color: AppColors.primarySoft),
               errorWidget: (_, _, _) => Image.network(
                 FoodImages.restaurantDefault,

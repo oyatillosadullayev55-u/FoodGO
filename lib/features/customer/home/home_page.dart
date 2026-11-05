@@ -489,15 +489,15 @@ class _QuickCategoryIcons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final quicks = [
-      {'emoji': '🍔', 'name': 'Burger'},
-      {'emoji': '🍕', 'name': 'Pitsa'},
-      {'emoji': '🍣', 'name': 'Sushi'},
-      {'emoji': '🍗', 'name': 'Fastfood'},
-      {'emoji': '☕', 'name': 'Qahva'},
-      {'emoji': '🍲', 'name': 'Milliy'},
-      {'emoji': '🍰', 'name': 'Shirinlik'},
-      {'emoji': '🥗', 'name': 'Salat'},
+    const quicks = <({IconData icon, String name})>[
+      (icon: Icons.lunch_dining_rounded, name: 'Burger'),
+      (icon: Icons.local_pizza_rounded, name: 'Pitsa'),
+      (icon: Icons.set_meal_rounded, name: 'Sushi'),
+      (icon: Icons.fastfood_rounded, name: 'Fastfood'),
+      (icon: Icons.local_cafe_rounded, name: 'Qahva'),
+      (icon: Icons.soup_kitchen_rounded, name: 'Milliy'),
+      (icon: Icons.cake_rounded, name: 'Shirinlik'),
+      (icon: Icons.eco_rounded, name: 'Salat'),
     ];
 
     return SizedBox(
@@ -511,7 +511,7 @@ class _QuickCategoryIcons extends ConsumerWidget {
           return InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              ref.read(restaurantQueryProvider.notifier).set(item['name']!);
+              ref.read(restaurantQueryProvider.notifier).set(item.name);
             },
             child: Column(
               children: [
@@ -535,15 +535,12 @@ class _QuickCategoryIcons extends ConsumerWidget {
                     ],
                   ),
                   child: Center(
-                    child: Text(
-                      item['emoji']!,
-                      style: const TextStyle(fontSize: 24),
-                    ),
+                    child: Icon(item.icon, size: 26, color: AppColors.dark),
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  item['name']!,
+                  item.name,
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,

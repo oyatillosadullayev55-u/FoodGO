@@ -64,11 +64,11 @@ class ProductTile extends ConsumerWidget {
                     product.imageUrl,
                   ),
                   fit: BoxFit.cover,
-                  placeholder: (_, _) => Container(color: AppColors.primarySoft),
-                  errorWidget: (_, _, _) => Image.network(
-                    FoodImages.national,
-                    fit: BoxFit.cover,
-                  ),
+                  memCacheWidth: 240,
+                  placeholder: (_, _) =>
+                      Container(color: AppColors.primarySoft),
+                  errorWidget: (_, _, _) =>
+                      Image.network(FoodImages.national, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -88,7 +88,8 @@ class ProductTile extends ConsumerWidget {
                       height: 1.2,
                     ),
                   ),
-                  if (product.description != null && product.description!.isNotEmpty) ...[
+                  if (product.description != null &&
+                      product.description!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       product.description!,
@@ -117,7 +118,10 @@ class ProductTile extends ConsumerWidget {
             // Qo'shish yoki hisoblagich tugmasi
             if (!product.isAvailable)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.greyLight,
                   borderRadius: BorderRadius.circular(12),
@@ -134,9 +138,13 @@ class ProductTile extends ConsumerWidget {
             else if (qty == 0)
               InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () => addProductToCart(context, ref, restaurant, product),
+                onTap: () =>
+                    addProductToCart(context, ref, restaurant, product),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(14),

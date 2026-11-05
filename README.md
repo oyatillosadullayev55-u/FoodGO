@@ -192,10 +192,13 @@ supabase/
 Web (production):
 
 ```bash
-flutter build web --release \
+flutter build web --release --no-web-resources-cdn \
   --dart-define=SUPABASE_URL="https://<project-ref>.supabase.co" \
   --dart-define=SUPABASE_ANON_KEY="<anon-key>"
 ```
+
+`--no-web-resources-cdn` CanvasKit'ni Google CDN o'rniga `build/web/canvaskit/`
+ichidan yuklaydi — ilova tezroq ochiladi va tashqi CDN'ga bog'liq bo'lmaydi.
 
 Natija: `build/web/`. Papkani Firebase Hosting, Vercel, Netlify yoki oddiy
 statik serverga joylashtirish mumkin. Lokal tekshirish:

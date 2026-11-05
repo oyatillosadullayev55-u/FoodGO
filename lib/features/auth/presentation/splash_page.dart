@@ -23,7 +23,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
   Future<void> _start() async {
     final prefs = await SharedPreferences.getInstance();
-    await Future.delayed(const Duration(milliseconds: 1400));
+    await Future.delayed(const Duration(milliseconds: 350));
     if (!mounted) return;
 
     final hasSession = ref.read(authRepositoryProvider).currentSession != null;
@@ -88,7 +88,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.dark,
                   borderRadius: BorderRadius.circular(10),

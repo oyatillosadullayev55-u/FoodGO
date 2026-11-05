@@ -52,10 +52,14 @@ class RestaurantCard extends StatelessWidget {
                   child: CachedNetworkImage(
                     imageUrl: displayImageUrl,
                     fit: BoxFit.cover,
+                    memCacheWidth: 700,
                     placeholder: (_, _) => Container(
                       color: AppColors.primarySoft,
                       child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryDark),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primaryDark,
+                        ),
                       ),
                     ),
                     errorWidget: (_, url, error) => Image.network(
@@ -87,7 +91,9 @@ class RestaurantCard extends StatelessWidget {
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
@@ -102,8 +108,11 @@ class RestaurantCard extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.schedule_rounded,
-                            size: 14, color: AppColors.dark),
+                        Icon(
+                          Icons.schedule_rounded,
+                          size: 14,
+                          color: AppColors.dark,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           '20–30 daq',
@@ -123,7 +132,9 @@ class RestaurantCard extends StatelessWidget {
                   right: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 5),
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.dark,
                       borderRadius: BorderRadius.circular(14),
@@ -131,8 +142,11 @@ class RestaurantCard extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star_rounded,
-                            size: 14, color: AppColors.primary),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
                         SizedBox(width: 3),
                         Text(
                           'Bonus',
@@ -152,7 +166,9 @@ class RestaurantCard extends StatelessWidget {
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(12),
@@ -160,8 +176,11 @@ class RestaurantCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.delivery_dining_rounded,
-                            size: 15, color: AppColors.primary),
+                        const Icon(
+                          Icons.delivery_dining_rounded,
+                          size: 15,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Yetkazish ${formatSom(kDeliveryFee)}',
@@ -199,7 +218,9 @@ class RestaurantCard extends StatelessWidget {
                       // Reyting nishoni
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(8),
@@ -207,8 +228,11 @@ class RestaurantCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded,
-                                size: 15, color: AppColors.dark),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 15,
+                              color: AppColors.dark,
+                            ),
                             const SizedBox(width: 3),
                             Text(
                               r.rating.toStringAsFixed(1),
@@ -239,8 +263,11 @@ class RestaurantCard extends StatelessWidget {
                   Row(
                     children: [
                       if (r.workingHours != null) ...[
-                        const Icon(Icons.access_time_rounded,
-                            size: 15, color: AppColors.grey),
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 15,
+                          color: AppColors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           r.workingHours!,
@@ -256,8 +283,11 @@ class RestaurantCard extends StatelessWidget {
                         Expanded(
                           child: Row(
                             children: [
-                              const Icon(Icons.location_on_outlined,
-                                  size: 15, color: AppColors.grey),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 15,
+                                color: AppColors.grey,
+                              ),
                               const SizedBox(width: 2),
                               Expanded(
                                 child: Text(
