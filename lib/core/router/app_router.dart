@@ -57,7 +57,9 @@ final appRouter = GoRouter(
     GoRoute(path: AppRoutes.register, builder: (_, _) => const RegisterPage()),
     GoRoute(
       path: AppRoutes.resetPassword,
-      builder: (_, _) => const ResetPasswordPage(),
+      builder: (_, state) => ResetPasswordPage(
+        initialEmail: state.uri.queryParameters['email'] ?? '',
+      ),
     ),
     GoRoute(path: AppRoutes.gate, builder: (_, _) => const RoleGatePage()),
 

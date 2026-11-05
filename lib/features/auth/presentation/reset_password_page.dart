@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/validators.dart';
 import '../../../core/widgets/content_frame.dart';
 import '../providers/auth_providers.dart';
 
 class ResetPasswordPage extends ConsumerStatefulWidget {
-  const ResetPasswordPage({super.key});
+  const ResetPasswordPage({super.key, this.initialEmail = ''});
+
+  /// Login sahifasidan "kod bilan tiklash" orqali kelganda email oldindan
+  /// to'ldiriladi.
+  final String initialEmail;
 
   @override
   ConsumerState<ResetPasswordPage> createState() => _ResetPasswordPageState();
@@ -17,6 +23,9 @@ class ResetPasswordPage extends ConsumerStatefulWidget {
 
 class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
+  final _codeFormKey = GlobalKey<FormState>();
+  late final _email = TextEditingController(text: widget.initialEmail);
+  final _code = TextEditingController();
   final _password = TextEditingController();
   final _passwordAgain = TextEditingController();
   bool _loading = false;
@@ -25,6 +34,8 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
 
   @override
   void dispose() {
+    _email.dispose();
+    _code.dispose();
     _password.dispose();
     _passwordAgain.dispose();
     super.dispose();
@@ -35,6 +46,37 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).updatePassword(_password.text);
+      ref.invalidate(profileProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Parol muvaffaqiyatli yangilandi')),
+        );
+      context.go(AppRoutes.gate);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(friendlyError(e))));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// Havola ochilmagan bo'lsa ham parolni yangilash: emailga kelgan
+  /// 6 xonali kod tekshiriladi va yangi parol o'rnatiladi.
+  Future<void> _submitCode() async {
+    if (!_codeFormKey.currentState!.validate()) return;
+    setState(() => _loading = true);
+    final repo = ref.read(authRepositoryProvider);
+    try {
+      await repo.verifyRecoveryCode(
+        email: _email.text.trim(),
+        code: _code.text,
+      );
+      await repo.updatePassword(_password.text);
       ref.invalidate(profileProvider);
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -71,7 +113,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: ContentFrame(
               maxWidth: 440,
-              child: hasSession ? _form(context) : _expired(context),
+              child: hasSession ? _form(context) : _codeForm(context),
             ),
           ),
         ),
@@ -79,43 +121,130 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
     );
   }
 
-  Widget _expired(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: AppColors.primarySoft,
-            borderRadius: BorderRadius.circular(22),
+  Widget _codeForm(BuildContext context) {
+    return Form(
+      key: _codeFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Icon(
+              Icons.link_off_rounded,
+              size: 36,
+              color: AppColors.dark,
+            ),
           ),
-          child: const Icon(
-            Icons.link_off_rounded,
-            size: 36,
-            color: AppColors.dark,
+          const SizedBox(height: 18),
+          const Text(
+            'Havola ochilmadi',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
           ),
-        ),
-        const SizedBox(height: 18),
-        const Text(
-          'Havola eskirgan',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Parolni tiklash havolasi eskirgan yoki sessiya topilmadi. '
-          'Iltimos, login sahifasida "Parolni unutdingizmi?" orqali yangi '
-          'havola oling.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.grey, fontSize: 14, height: 1.4),
-        ),
-        const SizedBox(height: 22),
-        ElevatedButton(
-          onPressed: () => context.go(AppRoutes.login),
-          child: const Text('Kirish sahifasiga qaytish'),
-        ),
-      ],
+          const SizedBox(height: 8),
+          const Text(
+            'Muammo emas: emailingizga yuborilgan xatdagi 6 xonali kod bilan '
+            'parolni yangilang.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.grey, fontSize: 14, height: 1.4),
+          ),
+          const SizedBox(height: 22),
+          TextFormField(
+            controller: _email,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autocorrect: false,
+            decoration: const InputDecoration(
+              hintText: 'Email',
+              prefixIcon: Icon(Icons.mail_outline),
+            ),
+            validator: Validators.email,
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _code,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            decoration: const InputDecoration(
+              hintText: '6 xonali kod',
+              prefixIcon: Icon(Icons.pin_outlined),
+            ),
+            validator: (value) {
+              if ((value ?? '').trim().length != 6) {
+                return "Kod 6 ta raqamdan iborat bo'lsin";
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _password,
+            obscureText: _obscure,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              hintText: 'Yangi parol (kamida 6 ta belgi)',
+              prefixIcon: const Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              ),
+            ),
+            validator: Validators.password,
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _passwordAgain,
+            obscureText: _obscureAgain,
+            onFieldSubmitted: (_) => _submitCode(),
+            decoration: InputDecoration(
+              hintText: 'Yangi parolni qayta kiriting',
+              prefixIcon: const Icon(Icons.lock_reset_outlined),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureAgain ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () => setState(() => _obscureAgain = !_obscureAgain),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Parolni qayta kiriting';
+              }
+              if (value != _password.text) return 'Parollar mos kelmadi';
+              return null;
+            },
+          ),
+          const SizedBox(height: 22),
+          ElevatedButton(
+            onPressed: _loading ? null : _submitCode,
+            child: _loading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.dark,
+                    ),
+                  )
+                : const Text('Parolni yangilash'),
+          ),
+          const SizedBox(height: 10),
+          TextButton(
+            onPressed: () => context.go(AppRoutes.login),
+            style: TextButton.styleFrom(foregroundColor: AppColors.dark),
+            child: const Text('Kirish sahifasiga qaytish'),
+          ),
+        ],
+      ),
     );
   }
 

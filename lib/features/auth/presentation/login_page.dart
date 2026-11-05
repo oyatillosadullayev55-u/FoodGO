@@ -115,10 +115,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       await ref.read(authRepositoryProvider).resetPassword(email);
       _email.text = email;
-      if (mounted) {
-        _showMessage(
-          'Tiklash havolasi $email ga yuborildi. Xatdagi havolani bosib, '
-          'yangi parol o\'rnatasiz.',
+      if (!mounted) return;
+      final useCode = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Xat yuborildi'),
+          content: Text(
+            '$email manziliga tiklash xati yuborildi.\n\n'
+            "Havolani bosishingiz mumkin, lekin u faqat ilova ochiq turgan "
+            "qurilmada ishlaydi. Telefondan tiklayotgan bo'lsangiz, xatdagi "
+            '6 xonali kodni kiriting.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Yopish'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Kod bilan tiklash'),
+            ),
+          ],
+        ),
+      );
+      if (useCode == true && mounted) {
+        context.go(
+          '${AppRoutes.resetPassword}?email=${Uri.encodeComponent(email)}',
         );
       }
     } catch (e) {

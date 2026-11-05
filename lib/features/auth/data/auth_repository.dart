@@ -114,6 +114,19 @@ class AuthRepository {
     );
   }
 
+  /// Emailga yuborilgan 6 xonali kodni tekshiradi va sessiya ochadi.
+  /// Havolani ochish imkoni bo'lmaganda (masalan, telefonda) ishlatiladi.
+  Future<void> verifyRecoveryCode({
+    required String email,
+    required String code,
+  }) async {
+    await _client.auth.verifyOTP(
+      type: OtpType.recovery,
+      email: email,
+      token: code.trim(),
+    );
+  }
+
   /// Tiklash havolasidan kelgan sessiya uchun yangi parol o'rnatadi.
   Future<void> updatePassword(String password) async {
     await _client.auth.updateUser(UserAttributes(password: password));

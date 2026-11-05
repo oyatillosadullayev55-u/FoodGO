@@ -147,10 +147,28 @@ orqali tayinlaydi. Kuryer panelida:
   parolni tiklash xatini yuboradi. Xatdagi havola ilovadagi **Yangi parol**
   sahifasini ochadi; yangi parol ikki marta kiritilib, `updateUser` orqali
   saqlanadi.
+- Havola ochilmasa (masalan, `localhost` manzili telefonda ishlamaydi), xuddi
+  shu sahifada **email + 6 xonali kod + yangi parol** bilan tiklash mumkin:
+  `verifyOTP(type: recovery)` chaqirilib, so'ng `updateUser` bajariladi.
+- Kod xatda ko'rinishi uchun Supabase Dashboard → **Authentication →
+  Email Templates → Reset Password** andozasiga `{{ .Token }}` qo'shing:
+
+  ```html
+  <h2>Parolni tiklash</h2>
+  <p>Parolni yangilash uchun ilovaga quyidagi 6 xonali kodni kiriting:</p>
+  <h1>{{ .Token }}</h1>
+  <p>Yoki havolani bosing:
+    <a href="{{ .ConfirmationURL }}">Parolni tiklash</a></p>
+  ```
+
 - Tiklash havolasi to'g'ri ochilishi uchun Supabase Dashboard →
   **Authentication → URL Configuration** bo'limida **Site URL** va
   **Redirect URLs** ga ilova manzilini qo'shing (masalan,
-  `http://127.0.0.1:8088` va hosting domeningiz).
+  `http://127.0.0.1:8088` va hosting domeningiz). Havolani telefonda ochmoqchi
+  bo'lsangiz, ilovani LAN manzilida ishga tushiring
+  (`flutter run -d chrome --web-hostname 0.0.0.0 --web-port 8088`) va
+  `http://<kompyuter-ip>:8088` ni ham ruxsat etilgan manzillar ro'yxatiga
+  qo'shing.
 
 ## Xavfsizlik
 
