@@ -16,6 +16,7 @@ import '../../models/restaurant.dart';
 import '../auth/data/user_profile.dart';
 import '../auth/providers/auth_providers.dart';
 import 'admin_providers.dart';
+import 'create_staff_dialog.dart';
 
 class AdminHomePage extends ConsumerStatefulWidget {
   const AdminHomePage({super.key});
@@ -125,6 +126,17 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage>
     final restaurants = ref.watch(adminRestaurantsProvider).asData?.value;
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final created = await showCreateStaffDialog(context);
+          if (created == true) {
+            ref.invalidate(adminUsersProvider);
+          }
+        },
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.person_add_alt_1_rounded, color: AppColors.dark),
+        label: const Text('Yangi xodim', style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.w800)),
+      ),
       appBar: AppBar(
         title: const Row(
           children: [
