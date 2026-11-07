@@ -13,6 +13,7 @@ import '../../core/widgets/content_frame.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/error_view.dart';
 import '../../core/widgets/image_picker_field.dart';
+import '../../core/widgets/order_lines_view.dart';
 import '../../models/food_order.dart';
 import '../../models/product.dart';
 import '../../models/restaurant.dart';
@@ -586,6 +587,10 @@ class _OrdersTab extends ConsumerWidget {
                             color: AppColors.grey,
                           ),
                         ),
+                      if (o.status.isActive) ...[
+                        const Divider(height: 20),
+                        OrderLinesView(orderId: o.id),
+                      ],
                       if (points.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         AppMap(points: points, height: 160, interactive: false),

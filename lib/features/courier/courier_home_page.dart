@@ -11,6 +11,7 @@ import '../../core/widgets/app_map.dart';
 import '../../core/widgets/content_frame.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/error_view.dart';
+import '../../core/widgets/order_lines_view.dart';
 import '../../models/food_order.dart';
 import '../auth/providers/auth_providers.dart';
 import '../delivery/delivery_providers.dart';
@@ -38,32 +39,38 @@ class _CourierHomePageState extends ConsumerState<CourierHomePage>
     ref.invalidate(courierOrdersProvider);
   }
 
-  Future<void> _run(String orderId, Future<void> Function() action) async {
+  Future<bool> _run(String orderId, Future<void> Function() action) async {
     setState(() => _busyOrderId = orderId);
     try {
       await action();
-      _refreshAll();
+      return true;
     } catch (e) {
       if (mounted) {
+        ref.invalidate(availableOrdersProvider);
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(friendlyError(e))));
       }
+      return false;
     } finally {
       if (mounted) setState(() => _busyOrderId = null);
     }
   }
 
-  Future<void> _claim(FoodOrder order) => _run(
-    order.id,
-    () => ref.read(deliveryRepositoryProvider).claimOrder(order.id),
-  );
+  Future<void> _claim(FoodOrder order) async {
+    final ok = await _run(
+      order.id,
+      () => ref.read(deliveryRepositoryProvider).claimOrder(order.id),
+    );
+    if (ok && mounted) _tabs.animateTo(1);
+  }
 
   Future<void> _setStatus(FoodOrder order, OrderStatus status) => _run(
-    order.id,
-    () => ref.read(deliveryRepositoryProvider).setStatus(order.id, status),
-  );
+        order.id,
+        () => ref.read(deliveryRepositoryProvider).setStatus(order.id, status),
+      );
 
   Future<void> _signOut() async {
+    await ref.read(pushServiceProvider).unregister();
     await ref.read(authRepositoryProvider).signOut();
     ref.invalidate(profileProvider);
     if (mounted) context.go(AppRoutes.login);
@@ -231,6 +238,7 @@ class _MyDeliveriesTab extends ConsumerWidget {
               return _OrderCard(
                 order: order,
                 busy: busyOrderId == order.id,
+                showLines: true,
                 actionLabel: switch (next) {
                   OrderStatus.pickedUp => 'Olib ketdim',
                   OrderStatus.onTheWay => 'Yo\'lga chiqdim',
@@ -257,6 +265,7 @@ class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     required this.busy,
+    this.showLines = false,
     this.actionLabel,
     this.actionIcon,
     this.onAction,
@@ -264,6 +273,7 @@ class _OrderCard extends StatelessWidget {
 
   final FoodOrder order;
   final bool busy;
+  final bool showLines;
   final String? actionLabel;
   final IconData? actionIcon;
   final VoidCallback? onAction;
@@ -327,6 +337,10 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: 6),
               _InfoRow(icon: Icons.sticky_note_2_outlined, text: order.note!),
             ],
+            if (showLines) ...[
+              const SizedBox(height: 12),
+              OrderLinesView(orderId: order.id),
+            ],
             if (points.isNotEmpty) ...[
               const SizedBox(height: 12),
               AppMap(points: points, height: 190, interactive: false),
@@ -336,7 +350,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    formatSom(order.total),
+                    'Naqd: ${formatSom(order.total)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 16,

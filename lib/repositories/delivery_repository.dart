@@ -90,7 +90,8 @@ class DeliveryRepository {
         .from('orders')
         .select('*, restaurants(name,address,lat,lng)')
         .eq('restaurant_id', restaurantId)
-        .order('created_at', ascending: false);
+        .order('created_at', ascending: false)
+        .limit(100);
     return (data as List).map((e) {
       return FoodOrder.fromMap(e as Map<String, dynamic>);
     }).toList();
