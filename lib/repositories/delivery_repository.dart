@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/utils/live_query.dart';
 import '../models/food_order.dart';
 import '../models/product.dart';
 import '../models/restaurant.dart';
@@ -121,29 +122,32 @@ class DeliveryRepository {
     }).toList();
   }
 
-  Stream<List<FoodOrder>> watchRestaurantOrders(String restaurantId) {
-    return _client
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .eq('restaurant_id', restaurantId)
-        .asyncMap((_) => fetchRestaurantOrders(restaurantId));
-  }
+  Stream<List<FoodOrder>> watchRestaurantOrders(String restaurantId) => liveQuery(
+        load: () => fetchRestaurantOrders(restaurantId),
+        changes: () => _client
+            .from('orders')
+            .stream(primaryKey: ['id'])
+            .eq('restaurant_id', restaurantId),
+        poll: const Duration(seconds: 30),
+      );
 
-  Stream<List<FoodOrder>> watchAvailableOrders() {
-    return _client
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .asyncMap((_) => fetchAvailableOrders());
-  }
+  Stream<List<FoodOrder>> watchAvailableOrders() => liveQuery(
+        load: fetchAvailableOrders,
+        changes: () => _client.from('orders').stream(primaryKey: ['id']),
+        poll: const Duration(seconds: 15),
+      );
 
   Stream<List<FoodOrder>> watchCourierOrders() {
     final uid = _uid;
     if (uid == null) return Stream.value(const []);
-    return _client
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .eq('courier_id', uid)
-        .asyncMap((_) => fetchCourierOrders());
+    return liveQuery(
+      load: fetchCourierOrders,
+      changes: () => _client
+          .from('orders')
+          .stream(primaryKey: ['id'])
+          .eq('courier_id', uid),
+      poll: const Duration(seconds: 30),
+    );
   }
 
   Future<void> claimOrder(String orderId) async {

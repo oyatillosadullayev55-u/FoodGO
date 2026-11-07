@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/utils/live_query.dart';
 import '../models/cart_item.dart';
 import '../models/food_order.dart';
 
@@ -80,11 +81,14 @@ class OrdersRepository {
   Stream<List<FoodOrder>> watchOrders() {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return Stream.error(AuthException('Tizimga kirilmagan'));
-    return _client
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .eq('customer_id', uid)
-        .asyncMap((_) => fetchOrders());
+    return liveQuery(
+      load: fetchOrders,
+      changes: () => _client
+          .from('orders')
+          .stream(primaryKey: ['id'])
+          .eq('customer_id', uid),
+      poll: const Duration(seconds: 30),
+    );
   }
 
   Future<void> cancelOrder(String id) async {
