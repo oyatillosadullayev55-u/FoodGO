@@ -8,6 +8,7 @@ class Product {
     this.description,
     this.imageUrl,
     this.categoryName,
+    this.categoryId,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class Product {
   final String? description;
   final String? imageUrl;
   final String? categoryName;
+  final String? categoryId;
 
   factory Product.fromMap(Map<String, dynamic> map) {
     final category = map['categories'];
@@ -31,6 +33,7 @@ class Product {
       imageUrl: map['image_url'] as String?,
       categoryName:
       category is Map<String, dynamic> ? category['name'] as String? : null,
+      categoryId: map['category_id'] as String?,
     );
   }
 }

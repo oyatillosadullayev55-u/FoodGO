@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/utils/live_query.dart';
 import '../models/food_order.dart';
 import '../models/product.dart';
+import '../models/product_category.dart';
 import '../models/restaurant.dart';
 
 /// Restoran egasi va kuryer paneli uchun ma'lumotlar.
@@ -46,6 +47,20 @@ class DeliveryRepository {
     return (data as List).map((e) {
       return Product.fromMap(e as Map<String, dynamic>);
     }).toList();
+  }
+
+  Future<List<ProductCategory>> fetchCategories() async {
+    final data = await _client.from('categories').select('id, name').order('name');
+    return (data as List)
+        .map((e) => ProductCategory.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> updateRestaurant(String id, Map<String, dynamic> values) async {
+    final rows = await _client.from('restaurants').update(values).eq('id', id).select('id');
+    if ((rows as List).isEmpty) {
+      throw Exception("Saqlab bo'lmadi: ruxsat yo'q");
+    }
   }
 
   Future<void> addProduct({
@@ -147,8 +162,8 @@ class DeliveryRepository {
           .from('orders')
           .stream(primaryKey: ['id'])
           .eq('courier_id', uid),
-      poll: const Duration(seconds: 30),
-    );
+        poll: const Duration(seconds: 30),
+      );
   }
 
   Future<void> claimOrder(String orderId) async {

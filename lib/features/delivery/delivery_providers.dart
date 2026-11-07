@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/food_order.dart';
 import '../../models/product.dart';
+import '../../models/product_category.dart';
 import '../../models/restaurant.dart';
 import '../../repositories/delivery_repository.dart';
 import '../auth/providers/auth_providers.dart';
@@ -17,6 +18,10 @@ final myRestaurantsProvider = FutureProvider.autoDispose<List<Restaurant>>(
 final restaurantProductsProvider =
     FutureProvider.autoDispose.family<List<Product>, String>(
   (ref, id) => ref.watch(deliveryRepositoryProvider).fetchProducts(id),
+);
+
+final categoriesProvider = FutureProvider.autoDispose<List<ProductCategory>>(
+  (ref) => ref.watch(deliveryRepositoryProvider).fetchCategories(),
 );
 
 final restaurantOrdersProvider = StreamProvider.autoDispose
