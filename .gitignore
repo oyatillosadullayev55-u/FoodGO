@@ -49,3 +49,11 @@ app.*.map.json
 
 # Lokal skrinshotlar
 .shots/
+
+# Maxfiy fayllar
+env.json
+android/key.properties
+*.jks
+*.keystore
+service-account*.json
+
