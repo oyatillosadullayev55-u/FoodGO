@@ -8,8 +8,8 @@ final ordersRepositoryProvider = Provider<OrdersRepository>(
       (ref) => OrdersRepository(ref.watch(supabaseProvider)),
 );
 
-final ordersProvider = FutureProvider.autoDispose<List<FoodOrder>>(
-      (ref) => ref.watch(ordersRepositoryProvider).fetchOrders(),
+final ordersProvider = StreamProvider.autoDispose<List<FoodOrder>>(
+      (ref) => ref.watch(ordersRepositoryProvider).watchOrders(),
 );
 
 final orderProvider = FutureProvider.autoDispose.family<FoodOrder, String>(

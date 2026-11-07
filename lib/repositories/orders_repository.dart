@@ -77,6 +77,16 @@ class OrdersRepository {
         .map((rows) => OrderStatus.fromString(rows.first['status'] as String?));
   }
 
+  Stream<List<FoodOrder>> watchOrders() {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return Stream.error(AuthException('Tizimga kirilmagan'));
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('customer_id', uid)
+        .asyncMap((_) => fetchOrders());
+  }
+
   Future<void> cancelOrder(String id) async {
     await _client.rpc(
       'set_order_status',

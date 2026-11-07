@@ -33,7 +33,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   bool _loading = false;
   bool _leaveAtDoor = false;
   LatLng? _destination;
-  int _selectedPaymentMethod = 0; // 0: Naqd pul, 1: FoodGo Pay, 2: Karta
 
   late final String _idempotencyKey = _newKey();
 
@@ -49,10 +48,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         .read(profileProvider)
         .maybeWhen(data: (p) => p, orElse: () => null);
     if (profile?.phone != null) _phone.text = profile!.phone!;
-    if (_address.text.isEmpty) {
-      _address.text =
-          'Toshkent sh., Amir Temur shoh ko\'chasi, 25-uy, 14-xonadon';
-    }
   }
 
   @override
@@ -91,6 +86,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     }
     if (!_formKey.currentState!.validate()) return;
 
+    if (_destination == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Xaritada uy joylashuvini belgilang')),
+      );
+      return;
+    }
+
     final cart = ref.read(cartProvider);
     final restaurant = cart.restaurant;
     if (cart.isEmpty || restaurant == null) return;
@@ -110,8 +112,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             address: _address.text.trim(),
             phone: Validators.cleanPhone(_phone.text),
             note: fullNote.isEmpty ? null : fullNote,
-            lat: _destination?.latitude,
-            lng: _destination?.longitude,
+            lat: _destination!.latitude,
+            lng: _destination!.longitude,
             idempotencyKey: _idempotencyKey,
           );
       ref.read(cartProvider.notifier).clear();
@@ -157,7 +159,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
             children: [
-              // 1. Yetkazib berish vaqti
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -201,8 +202,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ),
               ),
               const SizedBox(height: 18),
-
-              // 2. Manzil
               _title(context, 'Yetkazib berish manzili'),
               TextFormField(
                 controller: _address,
@@ -243,17 +242,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // 3. Xaritada joylashuv
-              _title(context, "Xaritada uy joylashuvi"),
+              _title(context, "Xaritada uy joylashuvi (Majburiy)"),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkSurface : Colors.white,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: isDark ? Colors.white10 : AppColors.borderLight,
-                    width: 0.8,
+                    color: _destination == null
+                        ? AppColors.error
+                        : (isDark ? Colors.white10 : AppColors.borderLight),
+                    width: _destination == null ? 1.5 : 0.8,
                   ),
                 ),
                 child: Column(
@@ -283,20 +282,27 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.touch_app_rounded,
                           size: 16,
-                          color: AppColors.grey,
+                          color: _destination == null
+                              ? AppColors.error
+                              : AppColors.grey,
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             _destination == null
-                                ? 'Xaritani bosib uyingizni belgilang (kuryer uchun aniq manzil)'
+                                ? 'Iltimos, xaritani bosib uyingizni belgilang!'
                                 : 'Belgilangan nuqta: ${_destination!.latitude.toStringAsFixed(5)}, ${_destination!.longitude.toStringAsFixed(5)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.grey,
+                              fontWeight: _destination == null
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
+                              color: _destination == null
+                                  ? AppColors.error
+                                  : AppColors.grey,
                             ),
                           ),
                         ),
@@ -312,8 +318,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ),
               ),
               const SizedBox(height: 14),
-
-              // Eshik oldida qoldirish (kontaktsiz yetkazish)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -344,36 +348,15 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // 3. To'lov usuli
               _title(context, "To'lov usuli"),
               _PaymentOption(
                 icon: Icons.payments_rounded,
                 title: "Naqd pul orqali",
                 subtitle: "Kuryer yetkazganda to'lanadi",
-                isSelected: _selectedPaymentMethod == 0,
-                onTap: () => setState(() => _selectedPaymentMethod = 0),
-              ),
-              const SizedBox(height: 10),
-              _PaymentOption(
-                icon: Icons.account_balance_wallet_rounded,
-                title: "FoodGo Pay",
-                subtitle: "Tezkor to'lov · +10% Bonus ballari",
-                isSelected: _selectedPaymentMethod == 1,
-                tag: 'TAVSIYA',
-                onTap: () => setState(() => _selectedPaymentMethod = 1),
-              ),
-              const SizedBox(height: 10),
-              _PaymentOption(
-                icon: Icons.credit_card_rounded,
-                title: "Bank kartasi (Uzcard / Humo)",
-                subtitle: "Ilovada biriktirilgan karta",
-                isSelected: _selectedPaymentMethod == 2,
-                onTap: () => setState(() => _selectedPaymentMethod = 2),
+                isSelected: true,
+                onTap: () {},
               ),
               const SizedBox(height: 22),
-
-              // 4. Buyurtma tafsilotlari
               _title(context, 'Buyurtma tarkibi'),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -506,7 +489,6 @@ class _PaymentOption extends StatelessWidget {
     required this.subtitle,
     required this.isSelected,
     required this.onTap,
-    this.tag,
   });
 
   final IconData icon;
@@ -514,91 +496,57 @@ class _PaymentOption extends StatelessWidget {
   final String subtitle;
   final bool isSelected;
   final VoidCallback onTap;
-  final String? tag;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.dark
-                : (isDark ? Colors.white10 : AppColors.borderLight),
-            width: isSelected ? 2 : 0.8,
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.dark,
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppColors.dark, size: 20),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : AppColors.greyLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppColors.dark, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14.5,
-                        ),
-                      ),
-                      if (tag != null) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            tag!,
-                            style: const TextStyle(
-                              color: AppColors.dark,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: AppColors.grey, fontSize: 12),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: AppColors.grey, fontSize: 12),
+                ),
+              ],
             ),
-            Icon(
-              isSelected
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_off_rounded,
-              color: isSelected ? AppColors.dark : AppColors.grey,
-              size: 22,
-            ),
-          ],
-        ),
+          ),
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.dark,
+            size: 22,
+          ),
+        ],
       ),
     );
   }

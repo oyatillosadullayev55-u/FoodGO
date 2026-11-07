@@ -57,7 +57,6 @@ class DeliveryRepository {
   }) async {
     var category = categoryId;
     if (category == null) {
-      // Kategoriya majburiy bo'lsa, mavjud birinchi kategoriyani ishlatamiz.
       try {
         final rows = await _client.from('categories').select('id').limit(1);
         if ((rows as List).isNotEmpty) {
@@ -120,6 +119,31 @@ class DeliveryRepository {
     return (data as List).map((e) {
       return FoodOrder.fromMap(e as Map<String, dynamic>);
     }).toList();
+  }
+
+  Stream<List<FoodOrder>> watchRestaurantOrders(String restaurantId) {
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('restaurant_id', restaurantId)
+        .asyncMap((_) => fetchRestaurantOrders(restaurantId));
+  }
+
+  Stream<List<FoodOrder>> watchAvailableOrders() {
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .asyncMap((_) => fetchAvailableOrders());
+  }
+
+  Stream<List<FoodOrder>> watchCourierOrders() {
+    final uid = _uid;
+    if (uid == null) return Stream.value(const []);
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('courier_id', uid)
+        .asyncMap((_) => fetchCourierOrders());
   }
 
   Future<void> claimOrder(String orderId) async {

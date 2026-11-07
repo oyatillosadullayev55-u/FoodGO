@@ -19,16 +19,15 @@ final restaurantProductsProvider =
   (ref, id) => ref.watch(deliveryRepositoryProvider).fetchProducts(id),
 );
 
-final restaurantOrdersProvider =
-    FutureProvider.autoDispose.family<List<FoodOrder>, String>(
-  (ref, id) =>
-      ref.watch(deliveryRepositoryProvider).fetchRestaurantOrders(id),
+final restaurantOrdersProvider = StreamProvider.autoDispose
+    .family<List<FoodOrder>, String>((ref, restaurantId) {
+  return ref.watch(deliveryRepositoryProvider).watchRestaurantOrders(restaurantId);
+});
+
+final availableOrdersProvider = StreamProvider.autoDispose<List<FoodOrder>>(
+  (ref) => ref.watch(deliveryRepositoryProvider).watchAvailableOrders(),
 );
 
-final availableOrdersProvider = FutureProvider.autoDispose<List<FoodOrder>>(
-  (ref) => ref.watch(deliveryRepositoryProvider).fetchAvailableOrders(),
-);
-
-final courierOrdersProvider = FutureProvider.autoDispose<List<FoodOrder>>(
-  (ref) => ref.watch(deliveryRepositoryProvider).fetchCourierOrders(),
+final courierOrdersProvider = StreamProvider.autoDispose<List<FoodOrder>>(
+  (ref) => ref.watch(deliveryRepositoryProvider).watchCourierOrders(),
 );

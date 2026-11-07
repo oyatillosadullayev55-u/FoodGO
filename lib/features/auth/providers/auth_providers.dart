@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/services/push_service.dart';
 import '../data/auth_repository.dart';
 import '../data/user_profile.dart';
 
@@ -10,6 +11,10 @@ final supabaseProvider = Provider<SupabaseClient>(
 
 final authRepositoryProvider = Provider<AuthRepository>(
       (ref) => AuthRepository(ref.watch(supabaseProvider)),
+);
+
+final pushServiceProvider = Provider<PushService>(
+      (ref) => PushService(ref.watch(supabaseProvider)),
 );
 
 /// Serverdagi profil (rol shu yerdan olinadi).
