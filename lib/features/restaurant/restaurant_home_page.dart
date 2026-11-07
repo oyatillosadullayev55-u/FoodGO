@@ -12,6 +12,7 @@ import '../../core/widgets/app_map.dart';
 import '../../core/widgets/content_frame.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/error_view.dart';
+import '../../core/widgets/image_picker_field.dart';
 import '../../models/food_order.dart';
 import '../../models/product.dart';
 import '../../models/restaurant.dart';
@@ -750,12 +751,10 @@ class _ProductEditorDialogState extends ConsumerState<_ProductEditorDialog> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _image,
-                decoration: const InputDecoration(
-                  labelText: 'Rasm URL (ixtiyoriy)',
-                  hintText: "Bo'sh qolsa avtomatik qo'yiladi",
-                ),
+              ImagePickerField(
+                restaurantId: widget.restaurantId,
+                initialUrl: _image.text,
+                onChanged: (url) => _image.text = url,
               ),
               if (widget.product != null) ...[
                 const SizedBox(height: 8),
