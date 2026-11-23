@@ -70,7 +70,7 @@ class AppMap extends StatelessWidget {
             TileLayer(
               urlTemplate:
                   'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-              userAgentPackageName: 'uz.foodgo.app',
+              userAgentPackageName: 'uz.osongo.app',
               maxZoom: 19,
             ),
             if (points.isNotEmpty)

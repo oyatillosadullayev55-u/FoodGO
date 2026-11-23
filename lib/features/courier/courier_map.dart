@@ -81,7 +81,7 @@ class _CourierMapState extends State<CourierMap> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'uz.foodgo.app',
+              userAgentPackageName: 'uz.osongo.app',
             ),
             if (me != null && target != null)
               PolylineLayer(

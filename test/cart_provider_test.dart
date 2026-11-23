@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foodgo/core/constants/app_constants.dart';
-import 'package:foodgo/features/customer/cart/cart_provider.dart';
-import 'package:foodgo/features/delivery/delivery_providers.dart';
-import 'package:foodgo/models/product.dart';
-import 'package:foodgo/models/restaurant.dart';
-import 'package:foodgo/repositories/delivery_repository.dart';
+import 'package:osongo/core/constants/app_constants.dart';
+import 'package:osongo/features/customer/cart/cart_provider.dart';
+import 'package:osongo/features/delivery/delivery_providers.dart';
+import 'package:osongo/models/product.dart';
+import 'package:osongo/models/restaurant.dart';
+import 'package:osongo/repositories/delivery_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Restaurant _rest(String id, {bool active = true}) =>

@@ -41,8 +41,6 @@ class _FoodGoAppState extends State<FoodGoApp> {
           appRouter.go(AppRoutes.resetPassword);
         }
       },
-      // Token yangilashdagi xatolar oqimda xato sifatida keladi — ushlab
-      // olinmasa, ular "Uncaught" bo'lib konsolga chiqadi.
       onError: (Object _) {},
     );
     if (widget.initialRecovery) {
@@ -65,7 +63,7 @@ class _FoodGoAppState extends State<FoodGoApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'FoodGo — tez yetkazib berish',
+      title: 'OsonGo — tez yetkazib berish',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

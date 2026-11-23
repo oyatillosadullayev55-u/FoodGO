@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foodgo/core/widgets/async_value_view.dart';
+import 'package:osongo/core/widgets/async_value_view.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 

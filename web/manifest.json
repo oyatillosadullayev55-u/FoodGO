@@ -1,6 +1,6 @@
 {
-    "name": "FoodGo — tez yetkazib berish",
-    "short_name": "FoodGo",
+    "name": "OsonGo — tez yetkazib berish",
+    "short_name": "OsonGo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FCE000",

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foodgo/models/food_order.dart';
-import 'package:foodgo/models/restaurant.dart';
+import 'package:osongo/models/food_order.dart';
+import 'package:osongo/models/restaurant.dart';
 
 Map<String, dynamic> _orderMap({Object? restaurants}) => {
       'id': 'o1',
