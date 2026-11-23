@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/errors/error_mapper.dart';
+import '../../../core/config/app_flavor.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
@@ -195,7 +196,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(height: 18),
                   const Center(
                     child: Text(
-                      'FoodGo',
+                      'OsonGo',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
@@ -204,10 +205,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Center(
+                  Center(
                     child: Text(
-                      'Hisobingizga kiring',
-                      style: TextStyle(color: AppColors.grey, fontSize: 14.5),
+                      AppFlavor.current.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 14.5,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -300,6 +305,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                   ),
+                  if (AppFlavor.current.allowsRegistration) ...[
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -320,6 +326,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ],
                   ),
+                  ],
+                  if (AppFlavor.current.allowsGuest) ...[
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: () => context.go(AppRoutes.customerHome),
@@ -333,6 +341,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                   ),
+                  ],
                   const SizedBox(height: 18),
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -342,21 +351,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           : AppColors.primarySoft,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Row(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.info_outline_rounded,
                           size: 18,
                           color: AppColors.dark,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            "Admin, restoran egasi va kuryer hisoblari faqat "
-                            "administrator tomonidan beriladi. Ro'yxatdan "
-                            "o'tgan oddiy foydalanuvchi mijoz sifatida boshlaydi.",
-                            style: TextStyle(fontSize: 12.5, height: 1.35),
+                            AppFlavor.current.allowsRegistration
+                                ? "Ro'yxatdan o'tgan foydalanuvchi mijoz "
+                                    "sifatida boshlaydi."
+                                : "Hisobni administrator beradi. Email va "
+                                    "parolni undan oling.",
+                            style: const TextStyle(fontSize: 12.5, height: 1.35),
                           ),
                         ),
                       ],

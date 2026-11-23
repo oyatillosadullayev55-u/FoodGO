@@ -93,7 +93,7 @@ class OrderDetailPage extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
               children: [
-                // 1. FoodGo Live Kuzatuv Kartasi
+                // 1. OsonGo Live Kuzatuv Kartasi
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -214,7 +214,7 @@ class OrderDetailPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'FoodGo Kuryer',
+                                'OsonGo Kuryer',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 15,

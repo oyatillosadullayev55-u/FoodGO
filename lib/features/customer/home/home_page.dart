@@ -348,7 +348,7 @@ class _PromoBanners extends StatelessWidget {
         color: AppColors.primary,
         textColor: AppColors.dark,
         icon: Icons.delivery_dining_rounded,
-        tag: 'FoodGo',
+        tag: 'OsonGo',
       ),
       _PromoData(
         title: '20% chegirma',
@@ -360,7 +360,7 @@ class _PromoBanners extends StatelessWidget {
         tag: 'AKSIYA',
       ),
       _PromoData(
-        title: 'FoodGo Plus',
+        title: 'OsonGo Plus',
         subtitle: '+10% keshbek',
         caption: 'Har bir buyurtmada ballar',
         color: const Color(0xFF6A11CB),

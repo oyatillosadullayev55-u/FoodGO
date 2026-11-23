@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // FoodGo Brand Yellow & Gold
+  // OsonGo Brand Yellow & Gold
   static const primary = Color(0xFFFCE000); // Yorqin sariq
   static const primaryDark = Color(0xFFE5C500); // Bosilgandagi quyuq sariq
   static const primarySoft = Color(0xFFFFF7C2); // Mayin sariq fon / chip

@@ -25,11 +25,29 @@ android {
     }
 
     defaultConfig {
-        applicationId = "uz.osongo.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    flavorDimensions += "app"
+    productFlavors {
+        create("customer") {
+            dimension = "app"
+            applicationId = "uz.osongo.app"
+            manifestPlaceholders["appName"] = "OsonGo"
+        }
+        create("partner") {
+            dimension = "app"
+            applicationId = "uz.osongo.partner"
+            manifestPlaceholders["appName"] = "OsonGo Hamkor"
+        }
+        create("admin") {
+            dimension = "app"
+            applicationId = "uz.osongo.admin"
+            manifestPlaceholders["appName"] = "OsonGo Admin"
+        }
     }
 
     signingConfigs {

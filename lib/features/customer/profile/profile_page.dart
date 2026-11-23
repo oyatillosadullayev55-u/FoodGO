@@ -39,7 +39,7 @@ class ProfilePage extends ConsumerWidget {
           data: (p) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
-              // 1. FoodGo ID Foydalanuvchi ma'lumotlari
+              // 1. OsonGo ID Foydalanuvchi ma'lumotlari
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -128,7 +128,7 @@ class ProfilePage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // 2. FoodGo Plus Kartasi
+              // 2. OsonGo Plus Kartasi
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -168,7 +168,7 @@ class ProfilePage extends ConsumerWidget {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              'FoodGo Club',
+                              'OsonGo Club',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -208,7 +208,7 @@ class ProfilePage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Ballarni FoodGo buyurtmalarida sarflang (1 ball = 1 so\'m)',
+                      'Ballarni OsonGo buyurtmalarida sarflang (1 ball = 1 so\'m)',
                       style: TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                   ],
@@ -257,7 +257,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   _MenuItem(
                     icon: Icons.account_balance_wallet_rounded,
-                    title: 'To\'lov usullari & FoodGo Pay',
+                    title: 'To\'lov usullari & OsonGo Pay',
                     subtitle: 'Bank kartalarini boshqarish',
                     onTap: () {},
                   ),
@@ -289,7 +289,7 @@ class ProfilePage extends ConsumerWidget {
                   _MenuItem(
                     icon: Icons.info_outline_rounded,
                     title: 'Ilova haqida',
-                    subtitle: 'FoodGo v1.0.0',
+                    subtitle: 'OsonGo v1.0.0',
                     onTap: () {},
                   ),
                 ],

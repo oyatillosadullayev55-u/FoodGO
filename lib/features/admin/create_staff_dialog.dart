@@ -32,6 +32,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _name = TextEditingController();
+  final _restaurant = TextEditingController();
   String _role = 'restaurant';
   bool _obscure = true;
   bool _saving = false;
@@ -42,6 +43,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
     _email.dispose();
     _password.dispose();
     _name.dispose();
+    _restaurant.dispose();
     super.dispose();
   }
 
@@ -67,6 +69,11 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
       return;
     }
 
+    if (_role == 'restaurant' && _restaurant.text.trim().isEmpty) {
+      setState(() => _error = 'Restoran nomini kiriting');
+      return;
+    }
+
     setState(() {
       _saving = true;
       _error = null;
@@ -77,6 +84,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
             password: password,
             role: _role,
             fullName: _name.text,
+            restaurantName: _role == 'restaurant' ? _restaurant.text : null,
           );
       if (!mounted) return;
       await _showCredentials(email, password);
@@ -90,7 +98,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
 
   /// Parol faqat shu yerda ko'rinadi, keyin uni qayta ko'rib bo'lmaydi.
   Future<void> _showCredentials(String email, String password) {
-    final text = 'FoodGo $_roleLabel hisobi\nEmail: $email\nParol: $password';
+    final text = 'OsonGo $_roleLabel hisobi\nEmail: $email\nParol: $password';
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -160,6 +168,15 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
                     : (v) => setState(() => _role = v ?? 'restaurant'),
               ),
               const SizedBox(height: 12),
+              if (_role == 'restaurant') ...[
+                TextField(
+                  controller: _restaurant,
+                  textCapitalization: TextCapitalization.words,
+                  decoration:
+                      const InputDecoration(labelText: 'Restoran nomi'),
+                ),
+                const SizedBox(height: 12),
+              ],
               TextField(
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
@@ -202,14 +219,6 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
                   ),
                 ),
               ),
-              if (_role == 'restaurant') ...[
-                const SizedBox(height: 10),
-                const Text(
-                  'Keyin "Restoranlar" bo\'limida restoranning "Egasi (email)" '
-                  'maydoniga shu emailni kiriting.',
-                  style: TextStyle(fontSize: 12, color: AppColors.grey),
-                ),
-              ],
               if (_error != null) ...[
                 const SizedBox(height: 10),
                 Text(

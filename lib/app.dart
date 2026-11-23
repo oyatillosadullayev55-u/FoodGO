@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/app_flavor.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-class FoodGoApp extends StatefulWidget {
-  const FoodGoApp({
+class OsonGoApp extends StatefulWidget {
+  const OsonGoApp({
     super.key,
     this.initialRecovery = false,
     this.recoveryLinkError,
@@ -25,10 +26,10 @@ class FoodGoApp extends StatefulWidget {
   static const double webMaxWidth = 1080;
 
   @override
-  State<FoodGoApp> createState() => _FoodGoAppState();
+  State<OsonGoApp> createState() => _OsonGoAppState();
 }
 
-class _FoodGoAppState extends State<FoodGoApp> {
+class _OsonGoAppState extends State<OsonGoApp> {
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -63,7 +64,7 @@ class _FoodGoAppState extends State<FoodGoApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'OsonGo — tez yetkazib berish',
+      title: AppFlavor.current.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
@@ -73,8 +74,8 @@ class _FoodGoAppState extends State<FoodGoApp> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return LayoutBuilder(
           builder: (context, constraints) {
-            final width = constraints.maxWidth > FoodGoApp.webMaxWidth
-                ? FoodGoApp.webMaxWidth
+            final width = constraints.maxWidth > OsonGoApp.webMaxWidth
+                ? OsonGoApp.webMaxWidth
                 : constraints.maxWidth;
             return ColoredBox(
               color: isDark ? const Color(0xFF0E0E10) : const Color(0xFFECECF0),

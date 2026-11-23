@@ -189,7 +189,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                             ),
                           ),
                           Text(
-                            'FoodGo kuryeri eng qisqa vaqtda yetkazadi',
+                            'OsonGo kuryeri eng qisqa vaqtda yetkazadi',
                             style: TextStyle(
                               color: AppColors.grey,
                               fontSize: 12,

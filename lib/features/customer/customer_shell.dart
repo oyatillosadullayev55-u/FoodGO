@@ -130,7 +130,7 @@ class _WebHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 const Text(
-                  'FoodGo',
+                  'OsonGo',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,

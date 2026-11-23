@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/auth_providers.dart';
@@ -31,7 +32,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     if (hasSession) {
       context.go(AppRoutes.gate);
-    } else if (!seen) {
+    } else if (AppFlavor.current.showsOnboarding && !seen) {
       context.go(AppRoutes.onboarding);
     } else {
       context.go(AppRoutes.login);
@@ -78,7 +79,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               ),
               const SizedBox(height: 18),
               const Text(
-                'FoodGo',
+                'OsonGo',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
@@ -96,9 +97,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                   color: AppColors.dark,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'FOODGO DELIVERY',
-                  style: TextStyle(
+                child: Text(
+                  AppFlavor.current.badge,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primary,
