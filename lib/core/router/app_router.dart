@@ -20,12 +20,23 @@ class AppRoutes {
   static const customerCheckout = '/customer/cart/checkout';
   static const customerOrders = '/customer/orders';
   static const customerProfile = '/customer/profile';
+  static const customerMessages = '/customer/messages';
+
+  static const restaurants = '/customer/home/restaurants';
+  static const shops = '/customer/home/shops';
+  static const products = '/customer/home/products';
+  static const masters = '/customer/home/masters';
+  static const delivery = '/customer/home/delivery';
+  static const services = '/customer/home/services';
+
+  static String masterPath(String id) => '/customer/home/masters/$id';
 
   static String restaurantPath(String id) => '/customer/home/restaurant/$id';
   static String orderPath(String id) => '/customer/orders/$id';
 
   static const courierHome = '/courier';
   static const restaurantHome = '/restaurant';
+  static const masterHome = '/master';
   static const adminHome = '/admin';
 }
 

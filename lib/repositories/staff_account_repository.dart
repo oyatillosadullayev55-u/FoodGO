@@ -7,7 +7,10 @@ class StaffAccountException implements Exception {
   String toString() => message;
 }
 
-/// Ro'yxatdagi bitta xodim (restoran egasi yoki kuryer).
+/// Xodim akkaunti turlari.
+const staffRoles = ['restaurant', 'shop', 'master', 'courier'];
+
+/// Ro'yxatdagi bitta xodim (hamkor).
 class StaffMember {
   const StaffMember({
     required this.id,
@@ -18,7 +21,7 @@ class StaffMember {
   });
 
   final String id;
-  final String role; // 'restaurant' | 'courier'
+  final String role; // [staffRoles] dan biri
   final String? fullName;
   final String? email;
   final String? phone;
@@ -48,7 +51,7 @@ class StaffAccountRepository {
       final rows = await _client
           .from('profiles')
           .select('id, role, full_name, email, phone')
-          .inFilter('role', ['restaurant', 'courier'])
+          .inFilter('role', staffRoles)
           .order('full_name');
       return (rows as List)
           .map((e) => StaffMember.fromMap(Map<String, dynamic>.from(e as Map)))
@@ -58,7 +61,8 @@ class StaffAccountRepository {
     }
   }
 
-  /// role: 'restaurant' yoki 'courier'. Restoran uchun [restaurantName] shart.
+  /// Restoran va magazin uchun [restaurantName] (do'kon nomi), usta uchun
+  /// [fullName] shart.
   Future<void> create({
     required String email,
     required String password,

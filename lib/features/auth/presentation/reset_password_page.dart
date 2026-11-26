@@ -240,7 +240,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           const SizedBox(height: 10),
           TextButton(
             onPressed: () => context.go(AppRoutes.login),
-            style: TextButton.styleFrom(foregroundColor: AppColors.dark),
+            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             child: const Text('Kirish sahifasiga qaytish'),
           ),
         ],
@@ -325,7 +325,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           const SizedBox(height: 10),
           TextButton(
             onPressed: _loading ? null : () => context.go(AppRoutes.login),
-            style: TextButton.styleFrom(foregroundColor: AppColors.dark),
+            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             child: const Text('Kirish sahifasiga qaytish'),
           ),
         ],

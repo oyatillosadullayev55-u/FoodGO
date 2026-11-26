@@ -299,7 +299,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     onPressed: _loading ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.dark,
+                      foregroundColor: AppColors.onPrimary,
                     ),
                     child: _loading
                         ? const SizedBox(
@@ -307,7 +307,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             height: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              color: AppColors.dark,
+                              color: AppColors.onPrimary,
                             ),
                           )
                         : const Text("Ro'yxatdan o'tish"),

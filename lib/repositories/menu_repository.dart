@@ -22,7 +22,7 @@ class MenuRepository {
         .from('products')
         .select('*, categories(name)')
         .eq('restaurant_id', restaurantId)
-        .order('name');
+        .order('name', ascending: true);
     return data.map(Product.fromMap).toList();
   }
 }

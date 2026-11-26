@@ -8,6 +8,7 @@ import '../../../core/config/app_flavor.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/brand_wordmark.dart';
 import '../../../core/widgets/content_frame.dart';
 import '../providers/auth_providers.dart';
 
@@ -171,39 +172,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.delivery_dining_rounded,
-                        color: AppColors.dark,
-                        size: 46,
-                      ),
-                    ),
-                  ),
+                  const Center(child: BrandLogo(size: 84)),
                   const SizedBox(height: 18),
-                  const Center(
-                    child: Text(
-                      'OsonGo',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
+                  const Center(child: BrandWordmark(size: 32)),
                   const SizedBox(height: 6),
                   Center(
                     child: Text(
@@ -272,7 +243,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             child: TextButton(
                               onPressed: _loading ? null : _forgotPassword,
                               style: TextButton.styleFrom(
-                                foregroundColor: AppColors.dark,
+                                foregroundColor: AppColors.primary,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
                                 ),
@@ -295,7 +266,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: AppColors.dark,
+                                        color: AppColors.onPrimary,
                                       ),
                                     )
                                   : const Text('Kirish'),
@@ -317,7 +288,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       TextButton(
                         onPressed: () => context.go(AppRoutes.register),
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.dark,
+                          foregroundColor: AppColors.primary,
                         ),
                         child: const Text(
                           "Ro'yxatdan o'tish",
@@ -334,7 +305,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     icon: const Icon(Icons.explore_outlined, size: 18),
                     label: const Text('Mehmon sifatida davom etish'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.dark,
+                      foregroundColor: AppColors.primary,
                       side: const BorderSide(
                         color: AppColors.borderLight,
                         width: 1.2,

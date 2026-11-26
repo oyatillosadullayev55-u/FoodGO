@@ -1,5 +1,5 @@
 name: osongo
-description: "A new Flutter project."
+description: "OsonGo — ovqat, ustalar, magazinlar va xizmatlar bitta ilovada."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -47,6 +47,7 @@ dependencies:
   firebase_messaging: ^15.2.4
   flutter_local_notifications: ^18.0.1
   geolocator: ^13.0.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +65,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "#FCE000"
+  adaptive_icon_background: "#5B16E0"
   adaptive_icon_foreground: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
@@ -78,6 +79,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icon/icon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

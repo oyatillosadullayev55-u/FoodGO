@@ -187,7 +187,7 @@ create policy restaurants_read on public.restaurants
     is_active
     or public.is_admin()
     or owner_id = auth.uid()
-    or lower(coalesce(owner_email, '')) = lower(coalesce(auth.jwt() ->> 'email', ''))
+    or lower(owner_email) = lower(auth.jwt() ->> 'email')
   );
 
 create policy restaurants_admin_write on public.restaurants
@@ -197,11 +197,11 @@ create policy restaurants_owner_update on public.restaurants
   for update
   using (
     owner_id = auth.uid()
-    or lower(coalesce(owner_email, '')) = lower(coalesce(auth.jwt() ->> 'email', ''))
+    or lower(owner_email) = lower(auth.jwt() ->> 'email')
   )
   with check (
     owner_id = auth.uid()
-    or lower(coalesce(owner_email, '')) = lower(coalesce(auth.jwt() ->> 'email', ''))
+    or lower(owner_email) = lower(auth.jwt() ->> 'email')
   );
 
 -- ---------- 8. Siyosatlar: categories va products ----------

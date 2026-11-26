@@ -1,6 +1,23 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Jadval, ustun yoki funksiya bazada yo'q (migratsiya ishga tushirilmagan).
+bool isMissingSchema(Object error) =>
+    error is PostgrestException &&
+    const {
+      '42P01',
+      '42703',
+      '42883',
+      'PGRST200',
+      'PGRST202',
+      'PGRST204',
+      'PGRST205',
+    }.contains(error.code);
+
 String friendlyError(Object error) {
+  if (isMissingSchema(error)) {
+    return "Bu bo'lim uchun baza hali tayyorlanmagan. Administrator "
+        'supabase/super_app.sql faylini ishga tushirishi kerak.';
+  }
   if (error is AuthException) {
     final m = error.message.toLowerCase();
     if (m.contains('invalid login credentials')) {

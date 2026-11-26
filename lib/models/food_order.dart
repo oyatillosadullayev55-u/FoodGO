@@ -29,6 +29,26 @@ enum OrderStatus {
       this == OrderStatus.cancelled || this == OrderStatus.rejected;
 
   bool get isActive => this != OrderStatus.delivered && !isFailed;
+
+  /// Kuzatuv chizig'idagi bosqich: Buyurtma, Tayyor, Yo'lda, Yetkazildi.
+  int get trackingStep => switch (this) {
+    OrderStatus.readyForPickup || OrderStatus.courierAssigned => 1,
+    OrderStatus.pickedUp || OrderStatus.onTheWay => 2,
+    OrderStatus.delivered => 3,
+    _ => 0,
+  };
+
+  /// Mijozga ko'rsatiladigan sarlavha.
+  String get headline => switch (this) {
+    OrderStatus.pending => 'Buyurtma yuborildi',
+    OrderStatus.accepted => 'Buyurtma qabul qilindi',
+    OrderStatus.preparing => 'Buyurtmangiz tayyorlanmoqda',
+    OrderStatus.readyForPickup => 'Buyurtma tayyor!',
+    OrderStatus.courierAssigned => 'Kuryer olib ketishga bormoqda',
+    OrderStatus.pickedUp || OrderStatus.onTheWay => "Buyurtmangiz yo'lda!",
+    OrderStatus.delivered => 'Buyurtma yetkazildi',
+    OrderStatus.cancelled || OrderStatus.rejected => label,
+  };
 }
 
 class FoodOrder {
@@ -49,6 +69,7 @@ class FoodOrder {
     this.courierId,
     this.lat,
     this.lng,
+    this.commission = 0,
   });
 
   final String id;
@@ -67,6 +88,9 @@ class FoodOrder {
   final String? courierId;
   final double? lat;
   final double? lng;
+
+  /// Platforma komissiyasi (yetkazilgach server hisoblaydi).
+  final int commission;
 
   LatLng? get restaurantLocation =>
       (restaurantLat != null && restaurantLng != null)
@@ -96,6 +120,7 @@ class FoodOrder {
       courierId: map['courier_id'] as String?,
       lat: (map['lat'] as num?)?.toDouble(),
       lng: (map['lng'] as num?)?.toDouble(),
+      commission: (map['commission_amount'] as num?)?.toInt() ?? 0,
     );
   }
 }

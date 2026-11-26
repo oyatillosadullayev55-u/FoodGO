@@ -27,6 +27,7 @@ class FoodImages {
 
   /// Restoran nomiga qarab haqiqiy mazali rasm tanlaydi
   static String getRestaurantImage(String name, String? imageUrl) {
+    if (imageUrl != null && imageUrl.startsWith('assets/')) return imageUrl;
     if (imageUrl != null &&
         imageUrl.trim().isNotEmpty &&
         imageUrl.startsWith('http')) {
@@ -87,6 +88,7 @@ class FoodImages {
     String? categoryName,
     String? imageUrl,
   ) {
+    if (imageUrl != null && imageUrl.startsWith('assets/')) return imageUrl;
     if (imageUrl != null &&
         imageUrl.trim().isNotEmpty &&
         imageUrl.startsWith('http')) {

@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
 import '../../../core/widgets/quantity_stepper.dart';
+import '../../../core/widgets/ui.dart';
 import '../../../models/product.dart';
 import '../../../models/restaurant.dart';
 import '../cart/cart_actions.dart';
@@ -57,18 +57,18 @@ class ProductTile extends ConsumerWidget {
               child: SizedBox(
                 width: 88,
                 height: 88,
-                child: CachedNetworkImage(
-                  imageUrl: FoodImages.getProductImage(
-                    product.name,
-                    product.categoryName,
-                    product.imageUrl,
-                  ),
-                  fit: BoxFit.cover,
-                  memCacheWidth: 240,
-                  placeholder: (_, _) =>
-                      Container(color: AppColors.primarySoft),
-                  errorWidget: (_, _, _) =>
-                      Image.network(FoodImages.national, fit: BoxFit.cover),
+                child: AppImage(
+                  // Magazin mahsulotiga taom rasmi qo'yilmaydi.
+                  restaurant.isShop
+                      ? product.imageUrl
+                      : FoodImages.getProductImage(
+                          product.name,
+                          product.categoryName,
+                          product.imageUrl,
+                        ),
+                  fallbackIcon: restaurant.isShop
+                      ? Icons.inventory_2_rounded
+                      : Icons.fastfood_rounded,
                 ),
               ),
             ),
@@ -116,7 +116,7 @@ class ProductTile extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             // Qo'shish yoki hisoblagich tugmasi
-            if (!product.isAvailable)
+            if (!product.isAvailable || product.isSoldOut)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -159,12 +159,12 @@ class ProductTile extends ConsumerWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add, size: 18, color: AppColors.dark),
+                      Icon(Icons.add, size: 18, color: AppColors.onPrimary),
                       SizedBox(width: 2),
                       Text(
                         'Qo\'shish',
                         style: TextStyle(
-                          color: AppColors.dark,
+                          color: AppColors.onPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),

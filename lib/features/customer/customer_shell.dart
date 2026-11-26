@@ -3,81 +3,206 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/brand_wordmark.dart';
+import '../marketplace/marketplace_providers.dart';
 import 'cart/cart_provider.dart';
+
+/// Tarmoqlar tartibi routes_customer.dart bilan bir xil.
+const _destinations = <(IconData, IconData, String)>[
+  (Icons.home_outlined, Icons.home_rounded, 'Bosh sahifa'),
+  (Icons.access_time_rounded, Icons.access_time_filled_rounded, 'Buyurtmalar'),
+  (Icons.shopping_cart_outlined, Icons.shopping_cart_rounded, 'Savat'),
+  (Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'Xabarlar'),
+  (Icons.person_outline_rounded, Icons.person_rounded, 'Profil'),
+];
+
+const _cartIndex = 2;
+const _messagesIndex = 3;
 
 class CustomerShell extends ConsumerWidget {
   const CustomerShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  static const _destinations = <_Branch>[
-    _Branch(Icons.storefront_outlined, Icons.storefront_rounded, 'Asosiy'),
-    _Branch(Icons.search_rounded, Icons.search_rounded, 'Qidiruv'),
-    _Branch(Icons.shopping_basket_outlined, Icons.shopping_basket_rounded,
-        'Savat'),
-    _Branch(Icons.receipt_long_outlined, Icons.receipt_long_rounded,
-        'Buyurtmalar'),
-    _Branch(Icons.person_outline_rounded, Icons.person_rounded, 'Profil'),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(cartProvider.select((c) => c.count));
+    final cart = ref.watch(cartProvider.select((c) => c.count));
+    final unread = ref.watch(unreadNotificationsProvider);
     final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final current = navigationShell.currentIndex;
 
-    void onSelected(int i) => navigationShell.goBranch(
-          i,
-          initialLocation: i == navigationShell.currentIndex,
-        );
+    void onSelected(int i) =>
+        navigationShell.goBranch(i, initialLocation: i == current);
+
+    int badge(int i) => switch (i) {
+      _cartIndex => cart,
+      _messagesIndex => unread,
+      _ => 0,
+    };
 
     return Scaffold(
       body: Column(
         children: [
           if (isWide)
-            _WebHeader(
-              currentIndex: navigationShell.currentIndex,
-              cartCount: count,
-              onSelected: onSelected,
-            ),
+            _WebHeader(current: current, badge: badge, onSelected: onSelected),
           Expanded(child: navigationShell),
         ],
       ),
       bottomNavigationBar: isWide
           ? null
-          : NavigationBar(
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: onSelected,
-              destinations: [
-                for (var i = 0; i < _destinations.length; i++)
-                  NavigationDestination(
-                    icon: _destinations[i].iconData(count, selected: false),
-                    selectedIcon:
-                        _destinations[i].iconData(count, selected: true),
-                    label: _destinations[i].label,
-                  ),
-              ],
-            ),
+          : _BottomBar(current: current, badge: badge, onSelected: onSelected),
     );
   }
 }
 
-class _Branch {
-  const _Branch(this.icon, this.selectedIcon, this.label);
+Widget _withBadge(int count, Widget child) => Badge.count(
+  count: count,
+  isLabelVisible: count > 0,
+  backgroundColor: AppColors.accentRed,
+  child: child,
+);
 
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
+/// Pastki menyu: o'rtada ko'tarilgan savat tugmasi.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({
+    required this.current,
+    required this.badge,
+    required this.onSelected,
+  });
 
-  Widget iconData(int cartCount, {required bool selected}) {
-    final Widget child = Icon(selected ? selectedIcon : icon);
-    if (label != 'Savat') return child;
-    return Badge.count(
-      count: cartCount,
-      isLabelVisible: cartCount > 0,
-      backgroundColor: AppColors.primary,
-      textColor: AppColors.dark,
-      textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
-      child: child,
+  final int current;
+  final int Function(int) badge;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 18,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 66,
+          child: Row(
+            children: [
+              for (var i = 0; i < _destinations.length; i++)
+                Expanded(
+                  child: i == _cartIndex
+                      ? _CartButton(
+                          count: badge(i),
+                          selected: current == i,
+                          onTap: () => onSelected(i),
+                        )
+                      : _NavItem(
+                          destination: _destinations[i],
+                          count: badge(i),
+                          selected: current == i,
+                          onTap: () => onSelected(i),
+                        ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.destination,
+    required this.count,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final (IconData, IconData, String) destination;
+  final int count;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, activeIcon, label) = destination;
+    final color = selected ? AppColors.primary : AppColors.grey;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: InkResponse(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _withBadge(
+              count,
+              Icon(selected ? activeIcon : icon, color: color, size: 25),
+            ),
+            const SizedBox(height: 3),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CartButton extends StatelessWidget {
+  const _CartButton({
+    required this.count,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int count;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Semantics(
+        selected: selected,
+        button: true,
+        label: 'Savat',
+        child: _withBadge(
+          count,
+          Material(
+            color: selected ? AppColors.primaryDark : AppColors.primary,
+            shape: const CircleBorder(),
+            elevation: 6,
+            shadowColor: AppColors.primary,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onTap,
+              child: const SizedBox(
+                width: 54,
+                height: 54,
+                child: Icon(Icons.shopping_cart_rounded, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -85,28 +210,21 @@ class _Branch {
 /// Katta ekranlar uchun yuqori navigatsiya paneli.
 class _WebHeader extends StatelessWidget {
   const _WebHeader({
-    required this.currentIndex,
-    required this.cartCount,
+    required this.current,
+    required this.badge,
     required this.onSelected,
   });
 
-  final int currentIndex;
-  final int cartCount;
+  final int current;
+  final int Function(int) badge;
   final ValueChanged<int> onSelected;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? Colors.white10 : AppColors.borderLight,
-          ),
-        ),
-      ),
+    return Material(
+      color: isDark ? AppColors.darkSurface : Colors.white,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -115,126 +233,28 @@ class _WebHeader extends StatelessWidget {
             height: 68,
             child: Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(
-                    Icons.delivery_dining_rounded,
-                    color: AppColors.dark,
-                    size: 26,
-                  ),
-                ),
+                const BrandLogo(size: 40),
                 const SizedBox(width: 10),
-                const Text(
-                  'OsonGo',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.6,
-                  ),
-                ),
-                const SizedBox(width: 28),
-                for (var i = 0; i < CustomerShell._destinations.length; i++)
-                  _WebTab(
-                    branch: CustomerShell._destinations[i],
-                    cartCount: cartCount,
-                    selected: currentIndex == i,
-                    onTap: () => onSelected(i),
-                  ),
+                const BrandWordmark(size: 22),
                 const Spacer(),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurfaceElevated : AppColors.greyLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.location_on_rounded,
-                          size: 17, color: AppColors.dark),
-                      SizedBox(width: 5),
-                      Text(
-                        'Toshkent',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
+                for (var i = 0; i < _destinations.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: TextButton.icon(
+                      onPressed: () => onSelected(i),
+                      style: TextButton.styleFrom(
+                        backgroundColor: current == i ? AppColors.primary : null,
+                        foregroundColor: current == i
+                            ? Colors.white
+                            : AppColors.grey,
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.bolt_rounded,
-                          size: 16, color: AppColors.accentRed),
-                      SizedBox(width: 2),
-                      Text(
-                        '25 daq',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12.5,
-                        ),
+                      icon: _withBadge(
+                        badge(i),
+                        Icon(_destinations[i].$1, size: 19),
                       ),
-                    ],
+                      label: Text(_destinations[i].$3),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WebTab extends StatelessWidget {
-  const _WebTab({
-    required this.branch,
-    required this.cartCount,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final _Branch branch;
-  final int cartCount;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: Material(
-        color: selected
-            ? AppColors.primary
-            : (isDark ? AppColors.darkSurface : Colors.white),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-            child: Row(
-              children: [
-                IconTheme(
-                  data: IconThemeData(
-                    size: 19,
-                    color: selected ? AppColors.dark : AppColors.grey,
-                  ),
-                  child: branch.iconData(cartCount, selected: false),
-                ),
-                const SizedBox(width: 7),
-                Text(
-                  branch.label,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                    color: selected ? AppColors.dark : AppColors.grey,
-                  ),
-                ),
               ],
             ),
           ),

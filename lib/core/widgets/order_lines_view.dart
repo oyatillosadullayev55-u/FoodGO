@@ -83,7 +83,7 @@ class OrderLinesView extends ConsumerWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 13,
-                          color: AppColors.dark,
+                          color: AppColors.onPrimary,
                         ),
                       ),
                     ),

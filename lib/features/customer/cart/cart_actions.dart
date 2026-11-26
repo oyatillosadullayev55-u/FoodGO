@@ -23,8 +23,8 @@ Future<void> addProductToCart(
     builder: (ctx) => AlertDialog(
       title: const Text('Savatni almashtirasizmi?'),
       content: const Text(
-        "Savatda boshqa restoran taomlari bor. Bir buyurtmada faqat bitta "
-            "restorandan taom olish mumkin. Eski savatni tozalab, yangisini "
+        "Savatda boshqa do'kon mahsulotlari bor. Bir buyurtmada faqat bitta "
+            "do'kondan olish mumkin. Eski savatni tozalab, yangisini "
             "boshlaymizmi?",
       ),
       actions: [

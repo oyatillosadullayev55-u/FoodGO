@@ -14,6 +14,10 @@ class Restaurant {
     this.lng,
     this.isActive = true,
     this.ownerEmail,
+    this.kind = 'restaurant',
+    this.deliveryTime,
+    this.ratingCount = 0,
+    this.verificationStatus = 'approved',
   });
 
   final String id;
@@ -28,6 +32,16 @@ class Restaurant {
   final double? lng;
   final bool isActive;
   final String? ownerEmail;
+
+  /// 'restaurant' yoki 'shop'.
+  final String kind;
+  final String? deliveryTime;
+  final int ratingCount;
+
+  /// 'pending', 'approved' yoki 'rejected'.
+  final String verificationStatus;
+
+  bool get isShop => kind == 'shop';
 
   LatLng? get location =>
       (lat != null && lng != null) ? LatLng(lat!, lng!) : null;
@@ -54,6 +68,10 @@ class Restaurant {
       lng: (map['lng'] as num?)?.toDouble(),
       isActive: map['is_active'] as bool? ?? true,
       ownerEmail: map['owner_email'] as String?,
+      kind: map['kind'] as String? ?? 'restaurant',
+      deliveryTime: map['delivery_time'] as String?,
+      ratingCount: (map['rating_count'] as num?)?.toInt() ?? 0,
+      verificationStatus: map['verification_status'] as String? ?? 'approved',
     );
   }
 }

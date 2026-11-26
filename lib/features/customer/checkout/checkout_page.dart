@@ -335,7 +335,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   contentPadding: EdgeInsets.zero,
                   value: _leaveAtDoor,
                   activeThumbColor: AppColors.primary,
-                  activeTrackColor: AppColors.dark,
+                  activeTrackColor: AppColors.primarySoft,
                   onChanged: (val) => setState(() => _leaveAtDoor = val),
                   title: const Text(
                     'Eshik oldida qoldirish',
@@ -434,7 +434,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               onPressed: _loading ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
+                foregroundColor: AppColors.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -445,7 +445,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        color: AppColors.dark,
+                        color: AppColors.onPrimary,
                       ),
                     )
                   : Text('Buyurtma berish · ${formatSom(total)}'),
@@ -519,7 +519,7 @@ class _PaymentOption extends StatelessWidget {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.dark, size: 20),
+            child: Icon(icon, color: AppColors.onPrimary, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -543,7 +543,7 @@ class _PaymentOption extends StatelessWidget {
           ),
           const Icon(
             Icons.check_circle_rounded,
-            color: AppColors.dark,
+            color: AppColors.primary,
             size: 22,
           ),
         ],

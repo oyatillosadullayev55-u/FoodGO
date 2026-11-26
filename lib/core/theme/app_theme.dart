@@ -10,12 +10,12 @@ class AppTheme {
       brightness: Brightness.light,
     ).copyWith(
       primary: AppColors.primary,
-      onPrimary: AppColors.dark,
+      onPrimary: AppColors.onPrimary,
       surface: Colors.white,
       onSurface: AppColors.dark,
       error: AppColors.error,
     ),
-    scaffoldBg: const Color(0xFFF7F7F9),
+    scaffoldBg: AppColors.scaffold,
     fieldFill: AppColors.greyLight,
     isDark: false,
   );
@@ -26,7 +26,7 @@ class AppTheme {
       brightness: Brightness.dark,
     ).copyWith(
       primary: AppColors.primary,
-      onPrimary: AppColors.dark,
+      onPrimary: AppColors.onPrimary,
       surface: AppColors.darkSurface,
       onSurface: Colors.white,
       error: AppColors.error,
@@ -51,7 +51,7 @@ class AppTheme {
         foregroundColor: isDark ? Colors.white : AppColors.dark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         titleTextStyle: TextStyle(
           color: isDark ? Colors.white : AppColors.dark,
           fontSize: 20,
@@ -71,7 +71,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.dark, // OsonGo brend sariq fonda to'q matn
+          foregroundColor: AppColors.onPrimary,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
@@ -79,6 +79,34 @@ class AppTheme {
           ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          minimumSize: const Size(0, 44),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+      ),
+      tabBarTheme: TabBarThemeData(
+        indicatorColor: AppColors.primary,
+        labelColor: isDark ? Colors.white : AppColors.primary,
+        unselectedLabelColor: AppColors.grey,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+      ),
+      chipTheme: ChipThemeData(
+        selectedColor: AppColors.primary,
+        backgroundColor: fieldFill,
+        side: BorderSide.none,
+        showCheckmark: false,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -95,11 +123,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: AppColors.dark, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: AppColors.primary,
+        indicatorColor: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.primarySoft,
         backgroundColor: scheme.surface,
         elevation: 4,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -108,14 +138,16 @@ class AppTheme {
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected
-                ? (isDark ? Colors.white : AppColors.dark)
+                ? (isDark ? Colors.white : AppColors.primary)
                 : AppColors.grey,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: isSelected ? AppColors.dark : AppColors.grey,
+            color: isSelected
+                ? (isDark ? Colors.white : AppColors.primary)
+                : AppColors.grey,
             size: 24,
           );
         }),

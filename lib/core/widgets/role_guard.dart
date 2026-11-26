@@ -11,7 +11,10 @@ import '../theme/app_colors.dart';
 /// Qaysi panelga yo'naltirish kerakligini profil bo'yicha aniqlaydi.
 String homeRouteFor(UserProfile profile) {
   if (profile.role == UserRole.admin) return AppRoutes.adminHome;
-  if (profile.role == UserRole.restaurant || profile.ownsRestaurant) {
+  if (profile.role == UserRole.master) return AppRoutes.masterHome;
+  if (profile.role == UserRole.restaurant ||
+      profile.role == UserRole.shop ||
+      profile.ownsRestaurant) {
     return AppRoutes.restaurantHome;
   }
   if (profile.role == UserRole.courier) return AppRoutes.courierHome;

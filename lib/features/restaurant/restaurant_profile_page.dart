@@ -83,7 +83,7 @@ class _RestaurantProfilePageState extends ConsumerState<RestaurantProfilePage> {
   Future<void> _save() async {
     if (_saving) return;
     final name = _name.text.trim();
-    if (name.length < 2) return _snack('Restoran nomini kiriting');
+    if (name.length < 2) return _snack("Do'kon nomini kiriting");
 
     setState(() => _saving = true);
     try {
@@ -96,7 +96,7 @@ class _RestaurantProfilePageState extends ConsumerState<RestaurantProfilePage> {
         final products =
             await ref.read(restaurantProductsProvider(widget.restaurant.id).future);
         if (!products.any((p) => p.isAvailable)) {
-          _snack("Faollashtirish uchun menyuga kamida bitta taom qo'shing");
+          _snack("Faollashtirish uchun kamida bitta sotuvdagi mahsulot qo'shing");
           setState(() => _saving = false);
           return;
         }
@@ -126,7 +126,7 @@ class _RestaurantProfilePageState extends ConsumerState<RestaurantProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Restoran ma'lumotlari", style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text("Do'kon ma'lumotlari", style: TextStyle(fontWeight: FontWeight.w800)),
       ),
       body: ContentFrame(
         maxWidth: 700,
@@ -142,7 +142,7 @@ class _RestaurantProfilePageState extends ConsumerState<RestaurantProfilePage> {
             TextField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Restoran nomi'),
+              decoration: const InputDecoration(labelText: "Do'kon nomi"),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -215,7 +215,7 @@ class _RestaurantProfilePageState extends ConsumerState<RestaurantProfilePage> {
               onPressed: _saving ? null : _save,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: _saving
                   ? const SizedBox(

@@ -45,12 +45,14 @@ class CartNotifier extends Notifier<CartState> {
       state.isEmpty || state.restaurant?.id == restaurant.id;
 
   void add(Restaurant restaurant, Product product) {
-    if (!product.isAvailable || !canAdd(restaurant)) return;
+    if (!product.isAvailable || product.isSoldOut || !canAdd(restaurant)) {
+      return;
+    }
 
     final items = [...state.items];
     final index = items.indexWhere((e) => e.product.id == product.id);
     if (index >= 0) {
-      if (items[index].quantity < kMaxItemQuantity) {
+      if (items[index].quantity < product.maxQuantity(kMaxItemQuantity)) {
         items[index] =
             items[index].copyWith(quantity: items[index].quantity + 1);
       }
@@ -155,11 +157,11 @@ class CartNotifier extends Notifier<CartState> {
       final items = <CartItem>[];
       for (final e in saved.entries) {
         final p = byId[e.key];
-        if (p == null || !p.isAvailable) continue;
+        if (p == null || !p.isAvailable || p.isSoldOut) continue;
         items.add(
           CartItem(
             product: p,
-            quantity: e.value.clamp(1, kMaxItemQuantity).toInt(),
+            quantity: e.value.clamp(1, p.maxQuantity(kMaxItemQuantity)).toInt(),
           ),
         );
       }
@@ -174,7 +176,7 @@ class CartNotifier extends Notifier<CartState> {
       debugPrint('Savatni tiklashda xato: $e');
     } finally {
       _restored = true;
-      if (!state.isEmpty) _persist(state);
+      if (ref.mounted && !state.isEmpty) _persist(state);
     }
   }
 }

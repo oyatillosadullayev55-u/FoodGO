@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/food_images.dart';
+import '../../../core/widgets/ui.dart';
 import '../../../core/utils/money.dart';
 import '../../../models/restaurant.dart';
 
@@ -49,23 +49,9 @@ class RestaurantCard extends StatelessWidget {
                 SizedBox(
                   height: 165,
                   width: double.infinity,
-                  child: CachedNetworkImage(
-                    imageUrl: displayImageUrl,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 700,
-                    placeholder: (_, _) => Container(
-                      color: AppColors.primarySoft,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primaryDark,
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, url, error) => Image.network(
-                      FoodImages.restaurantDefault,
-                      fit: BoxFit.cover,
-                    ),
+                  child: AppImage(
+                    r.isShop ? r.imageUrl : displayImageUrl,
+                    fallbackIcon: Icons.storefront_rounded,
                   ),
                 ),
                 // Gradient soya
@@ -136,7 +122,7 @@ class RestaurantCard extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.dark,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Row(
@@ -231,7 +217,7 @@ class RestaurantCard extends StatelessWidget {
                             const Icon(
                               Icons.star_rounded,
                               size: 15,
-                              color: AppColors.dark,
+                              color: AppColors.onPrimary,
                             ),
                             const SizedBox(width: 3),
                             Text(
@@ -239,7 +225,7 @@ class RestaurantCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12,
-                                color: AppColors.dark,
+                                color: AppColors.onPrimary,
                               ),
                             ),
                           ],
