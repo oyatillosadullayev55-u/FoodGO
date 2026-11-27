@@ -108,7 +108,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           child: Icon(
                             item.icon,
                             size: 74,
-                            color: AppColors.dark,
+                            color: AppColors.onPrimary,
                           ),
                         ),
                         const SizedBox(height: 40),
@@ -142,7 +142,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: i == _index
-                        ? AppColors.dark
+                        ? AppColors.primary
                         : AppColors.grey.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -155,7 +155,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 onPressed: _next,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.dark,
+                  foregroundColor: AppColors.onPrimary,
                 ),
                 child: Text(isLast ? 'Boshlash' : 'Keyingi'),
               ),

@@ -8,6 +8,8 @@ const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const STAFF = ["restaurant", "shop", "master", "courier"];
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -38,11 +40,14 @@ Deno.serve(async (req) => {
       const email = String(b.email ?? "").trim().toLowerCase();
       const password = String(b.password ?? "");
       const role = b.role;
-      if (!["restaurant", "courier"].includes(role)) return json({ error: "Rol noto'g'ri" }, 400);
+      if (!STAFF.includes(role)) return json({ error: "Rol noto'g'ri" }, 400);
+      const hasStore = role === "restaurant" || role === "shop";
       if (!email.includes("@")) return json({ error: "Email noto'g'ri" }, 400);
       if (password.length < 8) return json({ error: "Parol kamida 8 belgi" }, 400);
-      if (role === "restaurant" && !String(b.restaurant_name ?? "").trim())
-        return json({ error: "Restoran nomi kerak" }, 400);
+      if (hasStore && !String(b.restaurant_name ?? "").trim())
+        return json({ error: "Do'kon nomi kerak" }, 400);
+      if (role === "master" && !String(b.full_name ?? "").trim())
+        return json({ error: "Ustaning ismi kerak" }, 400);
 
       const { data, error } = await admin.auth.admin.createUser({
         email, password, email_confirm: true,
@@ -59,15 +64,22 @@ Deno.serve(async (req) => {
         return json({ error: pe.message }, 400);
       }
 
-      if (role === "restaurant") {
-        const { error: re } = await admin.from("restaurants").insert({
+      // Yangi do'kon va usta profili tasdiqlanguncha ('pending') mijozga ko'rinmaydi.
+      let re: { message: string } | null = null;
+      if (hasStore) {
+        ({ error: re } = await admin.from("restaurants").insert({
           name: String(b.restaurant_name).trim(),
           owner_id: id, owner_email: email, is_active: false,
-        });
-        if (re) {
-          await admin.auth.admin.deleteUser(id);
-          return json({ error: re.message }, 400);
-        }
+          ...(role === "shop" ? { kind: "shop" } : {}),
+        }));
+      } else if (role === "master") {
+        ({ error: re } = await admin.from("masters").insert({
+          user_id: id, full_name: String(b.full_name).trim(), phone: b.phone ?? null,
+        }));
+      }
+      if (re) {
+        await admin.auth.admin.deleteUser(id);
+        return json({ error: re.message }, 400);
       }
       return json({ ok: true, user_id: id });
     }
@@ -76,11 +88,14 @@ Deno.serve(async (req) => {
       const id = String(b.user_id ?? "");
       if (!id || id === u.user.id) return json({ error: "Bu hisobni o'chirib bo'lmaydi" }, 400);
       const { data: t } = await admin.from("profiles").select("role").eq("id", id).maybeSingle();
-      if (!t || !["restaurant", "courier"].includes(t.role))
-        return json({ error: "Faqat restoran yoki kuryerni chiqarish mumkin" }, 400);
+      if (!t || !STAFF.includes(t.role))
+        return json({ error: "Faqat xodim hisobini chiqarish mumkin" }, 400);
 
-      // Restoran yashiriladi (buyurtma tarixi saqlansin)
+      // Do'kon va usta profili yashiriladi (buyurtma tarixi saqlansin)
       await admin.from("restaurants").update({ is_active: false }).eq("owner_id", id);
+      if (t.role === "master") {
+        await admin.from("masters").update({ is_active: false }).eq("user_id", id);
+      }
 
       const { error } = await admin.auth.admin.deleteUser(id);
       if (error) {

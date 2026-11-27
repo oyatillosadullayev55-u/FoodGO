@@ -9,6 +9,8 @@ class Product {
     this.imageUrl,
     this.categoryName,
     this.categoryId,
+    this.stock,
+    this.unit,
   });
 
   final String id;
@@ -20,6 +22,16 @@ class Product {
   final String? imageUrl;
   final String? categoryName;
   final String? categoryId;
+
+  /// Ombor qoldig'i. null bo'lsa qoldiq yuritilmaydi.
+  final int? stock;
+  final String? unit;
+
+  bool get isSoldOut => stock == 0;
+
+  /// Bitta buyurtmada olish mumkin bo'lgan eng ko'p miqdor.
+  int maxQuantity(int limit) =>
+      stock == null || stock! > limit ? limit : stock!;
 
   factory Product.fromMap(Map<String, dynamic> map) {
     final category = map['categories'];
@@ -34,6 +46,8 @@ class Product {
       categoryName:
       category is Map<String, dynamic> ? category['name'] as String? : null,
       categoryId: map['category_id'] as String?,
+      stock: (map['stock'] as num?)?.toInt(),
+      unit: map['unit'] as String?,
     );
   }
 }

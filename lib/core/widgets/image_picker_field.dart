@@ -6,6 +6,7 @@ import '../../features/auth/providers/auth_providers.dart';
 import '../../repositories/storage_repository.dart';
 import '../errors/error_mapper.dart';
 import '../theme/app_colors.dart';
+import 'ui.dart';
 
 final storageRepositoryProvider = Provider<StorageRepository>(
   (ref) => StorageRepository(ref.watch(supabaseProvider)),
@@ -103,14 +104,7 @@ class _ImagePickerFieldState extends ConsumerState<ImagePickerField> {
                               style: TextStyle(color: AppColors.grey)),
                         ],
                       )
-                    : Image.network(
-                        _url!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const Center(
-                          child: Icon(Icons.broken_image_rounded,
-                              color: AppColors.grey),
-                        ),
-                      ),
+                    : AppImage(_url, fallbackIcon: Icons.broken_image_rounded),
           ),
         ),
         if (_url != null && !_busy)

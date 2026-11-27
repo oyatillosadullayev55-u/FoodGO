@@ -12,6 +12,7 @@ import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../models/food_order.dart';
 import 'orders_providers.dart';
+import 'service_requests_tab.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.status});
@@ -30,8 +31,8 @@ class StatusChip extends StatelessWidget {
       bg = AppColors.error.withValues(alpha: 0.12);
       fg = AppColors.error;
     } else {
-      bg = AppColors.primary;
-      fg = AppColors.dark;
+      bg = AppColors.primary.withValues(alpha: 0.12);
+      fg = AppColors.primary;
     }
 
     return Container(
@@ -52,8 +53,34 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-class OrdersPage extends ConsumerWidget {
+/// Mahsulot buyurtmalari va usta xizmatlari tarixi.
+class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Buyurtmalar'),
+          bottom: const TabBar(
+            tabs: [Tab(text: 'Mahsulotlar'), Tab(text: 'Xizmatlar')],
+          ),
+        ),
+        body: const ContentFrame(
+          maxWidth: 860,
+          child: TabBarView(
+            children: [_ProductOrdersTab(), ServiceRequestsTab()],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductOrdersTab extends ConsumerWidget {
+  const _ProductOrdersTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,16 +88,8 @@ class OrdersPage extends ConsumerWidget {
     final fmt = DateFormat('dd MMMM, HH:mm');
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buyurtmalar', style: TextStyle(fontWeight: FontWeight.w800)),
-      ),
-      body: ContentFrame(
-        maxWidth: 860,
-        child: orders.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryDark),
-        ),
+    return orders.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorView(
           message: friendlyError(e),
           onRetry: () => ref.invalidate(ordersProvider),
@@ -84,7 +103,7 @@ class OrdersPage extends ConsumerWidget {
             );
           }
           return RefreshIndicator(
-            color: AppColors.dark,
+            color: AppColors.onPrimary,
             backgroundColor: AppColors.primary,
             onRefresh: () async {
               ref.invalidate(ordersProvider);
@@ -133,12 +152,12 @@ class OrdersPage extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: isDelivered
                                       ? AppColors.greyLight
-                                      : (isFailed ? AppColors.error.withValues(alpha: 0.1) : AppColors.primary),
+                                      : (isFailed ? AppColors.error.withValues(alpha: 0.1) : AppColors.primarySoft),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   Icons.storefront_rounded,
-                                  color: isDelivered ? AppColors.dark : (isFailed ? AppColors.error : AppColors.dark),
+                                  color: isDelivered ? AppColors.dark : (isFailed ? AppColors.error : AppColors.primary),
                                   size: 20,
                                 ),
                               ),
@@ -211,8 +230,6 @@ class OrdersPage extends ConsumerWidget {
             ),
           );
         },
-        ),
-      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/config/app_flavor.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/brand_wordmark.dart';
 import '../providers/auth_providers.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -42,8 +43,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Center(
+      backgroundColor: AppColors.primaryDark,
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+        alignment: Alignment.center,
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.6, end: 1),
           duration: const Duration(milliseconds: 650),
@@ -55,56 +58,26 @@ class _SplashPageState extends ConsumerState<SplashPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.dark,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.delivery_dining_rounded,
-                    size: 64,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+              const BrandLogo(size: 108),
               const SizedBox(height: 18),
+              const BrandWordmark(size: 38, onDark: true),
+              const SizedBox(height: 6),
               const Text(
-                'OsonGo',
+                'Barchasi bir ilovada!',
                 style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.dark,
-                  letterSpacing: -0.5,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.onPrimary,
                 ),
               ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.dark,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  AppFlavor.current.badge,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                    letterSpacing: 1.2,
-                  ),
+              const SizedBox(height: 14),
+              Text(
+                AppFlavor.current.badge,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white70,
+                  letterSpacing: 1.6,
                 ),
               ),
             ],

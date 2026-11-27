@@ -23,7 +23,7 @@ class DeliveryRepository {
         .from('restaurants')
         .select()
         .eq('owner_email', email)
-        .order('name');
+        .order('name', ascending: true);
     return (data as List).map((e) {
       return Restaurant.fromMap(e as Map<String, dynamic>);
     }).toList();
@@ -43,14 +43,14 @@ class DeliveryRepository {
         .from('products')
         .select('*, categories(name)')
         .eq('restaurant_id', restaurantId)
-        .order('name');
+        .order('name', ascending: true);
     return (data as List).map((e) {
       return Product.fromMap(e as Map<String, dynamic>);
     }).toList();
   }
 
   Future<List<ProductCategory>> fetchCategories() async {
-    final data = await _client.from('categories').select('id, name').order('name');
+    final data = await _client.from('categories').select('id, name').order('name', ascending: true);
     return (data as List)
         .map((e) => ProductCategory.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -70,6 +70,8 @@ class DeliveryRepository {
     required String description,
     required String imageUrl,
     String? categoryId,
+    int? stock,
+    String? unit,
   }) async {
     var category = categoryId;
     if (category == null) {
@@ -89,6 +91,9 @@ class DeliveryRepository {
       'description': description,
       'image_url': imageUrl,
       'is_available': true,
+      // Faqat magazinlarda yuboriladi: ustunlar super_app.sql bilan qo'shiladi.
+      'stock': ?stock,
+      'unit': ?unit,
     });
   }
 
@@ -111,6 +116,33 @@ class DeliveryRepository {
       return FoodOrder.fromMap(e as Map<String, dynamic>);
     }).toList();
   }
+
+  /// [since] dan beri yetkazilgan buyurtmalar (daromad hisobi uchun).
+  /// [column]: 'restaurant_id' yoki 'courier_id'.
+  Future<List<FoodOrder>> fetchDelivered({
+    required String column,
+    required String value,
+    required DateTime since,
+  }) async {
+    final data = await _client
+        .from('orders')
+        .select('*, restaurants(name,address,lat,lng)')
+        .eq(column, value)
+        .eq('status', OrderStatus.delivered.value)
+        .gte('created_at', since.toUtc().toIso8601String())
+        .order('created_at', ascending: false)
+        .limit(1000);
+    return data.map(FoodOrder.fromMap).toList();
+  }
+
+  /// Daromad oynasi boshlanishi: oy boshi yoki 14 kun oldin (qaysi ertaroq).
+  static DateTime incomeSince(DateTime now) {
+    final month = DateTime(now.year, now.month);
+    final fortnight = DateTime(now.year, now.month, now.day - 13);
+    return month.isBefore(fortnight) ? month : fortnight;
+  }
+
+  String? get currentUserId => _uid;
 
   /// Kuryerga tayyor, hali biriktirilmagan buyurtmalar.
   Future<List<FoodOrder>> fetchAvailableOrders() async {

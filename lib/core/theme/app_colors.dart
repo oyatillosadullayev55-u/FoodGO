@@ -1,27 +1,41 @@
 import 'package:flutter/material.dart';
 
+/// OsonGo binafsha dizayn tizimi.
 class AppColors {
-  // OsonGo Brand Yellow & Gold
-  static const primary = Color(0xFFFCE000); // Yorqin sariq
-  static const primaryDark = Color(0xFFE5C500); // Bosilgandagi quyuq sariq
-  static const primarySoft = Color(0xFFFFF7C2); // Mayin sariq fon / chip
+  // Brend binafsha
+  static const primary = Color(0xFF5B16E0);
+  static const primaryDark = Color(0xFF3E0AB2); // Bosilgan holat, gradient oxiri
+  static const primaryLight = Color(0xFF8C46FF); // Gradient boshi
+  static const primarySoft = Color(0xFFEFE9FF); // Mayin fon / chip
 
-  // Dark Charcoal / Jet Black
-  static const dark = Color(0xFF21201F); // Asosiy to'q rang / matn
-  static const grey = Color(0xFF85858E); // Matn va ikonkalar uchun kulrang
-  static const greyLight = Color(0xFFF4F4F6); // Mayin kulrang fon
-  static const borderLight = Color(0xFFE6E6EB); // Kartalar chegarasi
+  /// [primary] va gradient ustidagi matn va ikonkalar.
+  static const onPrimary = Colors.white;
 
-  // Accents
-  static const accentRed = Color(0xFFFC3F1D); // Qizil (chegirmalar, xatolar)
-  static const accentPurple = Color(0xFF8C38FF); // Binafsha
-  static const accentGold = Color(0xFFFFB700); // Oltin yulduz
+  // Matn va fonlar
+  static const dark = Color(0xFF17123A); // Asosiy to'q ko'k matn
+  static const grey = Color(0xFF7C7896); // Ikkinchi darajali matn
+  static const greyLight = Color(0xFFF4F2FB); // Mayin fon
+  static const borderLight = Color(0xFFE9E5F6); // Kartalar chegarasi
+  static const scaffold = Color(0xFFF8F7FD);
 
-  static const success = Color(0xFF2E9E5B);
-  static const error = Color(0xFFFC3F1D);
+  // Urg'u ranglari
+  static const accentRed = Color(0xFFEF2D46);
+  static const accentPurple = Color(0xFF8C46FF);
+  static const accentGold = Color(0xFFFFB300); // Yulduzcha
+  static const accentBlue = Color(0xFF2447D8);
 
-  // Dark Mode
-  static const darkBg = Color(0xFF141416);
-  static const darkSurface = Color(0xFF202023);
-  static const darkSurfaceElevated = Color(0xFF2C2C30);
+  static const success = Color(0xFF1F9D63);
+  static const warning = Color(0xFFF08C00);
+  static const error = Color(0xFFE5484D);
+
+  // Tungi rejim
+  static const darkBg = Color(0xFF0F0C1D);
+  static const darkSurface = Color(0xFF1A1630);
+  static const darkSurfaceElevated = Color(0xFF262041);
+
+  static const brandGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primaryDark, primaryLight],
+  );
 }

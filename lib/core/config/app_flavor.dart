@@ -6,17 +6,17 @@ enum AppFlavor {
   /// Mijozlar uchun: katalog, savat, buyurtma. Ro'yxatdan o'tish shu yerda.
   customer,
 
-  /// Restoran egalari va kuryerlar uchun. Hisobni admin beradi.
+  /// Restoran, magazin, usta va kuryerlar uchun. Hisobni admin beradi.
   partner,
 
-  /// Administrator uchun: xodim qo'shish va chiqarish.
+  /// Super Admin boshqaruv paneli.
   admin;
 
   static AppFlavor current = AppFlavor.customer;
 
   /// Ilovaning to'liq nomi (MaterialApp sarlavhasi).
   String get appTitle => switch (this) {
-    AppFlavor.customer => 'OsonGo — tez yetkazib berish',
+    AppFlavor.customer => 'OsonGo — barchasi bir ilovada',
     AppFlavor.partner => 'OsonGo Hamkor',
     AppFlavor.admin => 'OsonGo Admin',
   };
@@ -30,7 +30,7 @@ enum AppFlavor {
 
   String get loginSubtitle => switch (this) {
     AppFlavor.customer => 'Hisobingizga kiring',
-    AppFlavor.partner => 'Restoran yoki kuryer hisobingiz bilan kiring',
+    AppFlavor.partner => 'Hamkor hisobingiz bilan kiring',
     AppFlavor.admin => 'Administrator hisobi bilan kiring',
   };
 
@@ -48,6 +48,8 @@ enum AppFlavor {
     AppFlavor.customer => p.role == UserRole.customer,
     AppFlavor.partner =>
       p.role == UserRole.restaurant ||
+          p.role == UserRole.shop ||
+          p.role == UserRole.master ||
           p.role == UserRole.courier ||
           p.ownsRestaurant,
     AppFlavor.admin => p.role == UserRole.admin,
@@ -59,6 +61,8 @@ enum AppFlavor {
     UserRole.admin => 'Bu hisob administratorniki. "OsonGo Admin" '
         'ilovasidan foydalaning.',
     UserRole.restaurant ||
+    UserRole.shop ||
+    UserRole.master ||
     UserRole.courier => 'Bu hisob xodimniki (${role.label}). "OsonGo Hamkor" '
         'ilovasidan foydalaning.',
     UserRole.customer => 'Bu ilova xodimlar uchun. Buyurtma berish uchun '

@@ -29,6 +29,30 @@ final restaurantOrdersProvider = StreamProvider.autoDispose
   return ref.watch(deliveryRepositoryProvider).watchRestaurantOrders(restaurantId);
 });
 
+final storeIncomeProvider = FutureProvider.autoDispose
+    .family<List<FoodOrder>, String>((ref, restaurantId) {
+      return ref
+          .watch(deliveryRepositoryProvider)
+          .fetchDelivered(
+            column: 'restaurant_id',
+            value: restaurantId,
+            since: DeliveryRepository.incomeSince(DateTime.now()),
+          );
+    });
+
+final courierIncomeProvider = FutureProvider.autoDispose<List<FoodOrder>>((
+  ref,
+) {
+  final repo = ref.watch(deliveryRepositoryProvider);
+  final uid = repo.currentUserId;
+  if (uid == null) return Future.value(const []);
+  return repo.fetchDelivered(
+    column: 'courier_id',
+    value: uid,
+    since: DeliveryRepository.incomeSince(DateTime.now()),
+  );
+});
+
 final availableOrdersProvider = StreamProvider.autoDispose<List<FoodOrder>>(
   (ref) => ref.watch(deliveryRepositoryProvider).watchAvailableOrders(),
 );

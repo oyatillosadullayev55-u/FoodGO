@@ -163,7 +163,7 @@ class ProfilePage extends ConsumerWidget {
                               child: const Icon(
                                 Icons.star_rounded,
                                 size: 16,
-                                color: AppColors.dark,
+                                color: AppColors.onPrimary,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -189,7 +189,7 @@ class ProfilePage extends ConsumerWidget {
                           child: const Text(
                             'Obuna faol',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 11.5,
                             ),
@@ -225,17 +225,21 @@ class ProfilePage extends ConsumerWidget {
                       icon: switch (p.role) {
                         UserRole.admin => Icons.admin_panel_settings_rounded,
                         UserRole.courier => Icons.delivery_dining_rounded,
+                        UserRole.master => Icons.engineering_rounded,
                         _ => Icons.storefront_rounded,
                       },
                       title: switch (p.role) {
                         UserRole.admin => 'Admin paneli',
                         UserRole.courier => 'Kuryer paneli',
+                        UserRole.master => 'Usta paneli',
+                        UserRole.shop => 'Magazin paneli',
                         _ => 'Restoran paneli',
                       },
                       subtitle: switch (p.role) {
                         UserRole.admin =>
                           'Restoranlar, foydalanuvchilar va buyurtmalar',
                         UserRole.courier => 'Yangi buyurtmalar va yetkazmalar',
+                        UserRole.master => 'Xizmat buyurtmalari va daromad',
                         _ => 'Menyu va buyurtmalar boshqaruvi',
                       },
                       onTap: () => context.push(homeRouteFor(p)),
@@ -278,7 +282,7 @@ class ProfilePage extends ConsumerWidget {
                     icon: Icons.notifications_none_rounded,
                     title: 'Bildirishnomalar',
                     subtitle: 'Buyurtma holati xabarlari',
-                    onTap: () {},
+                    onTap: () => context.go(AppRoutes.customerMessages),
                   ),
                   _MenuItem(
                     icon: Icons.headset_mic_rounded,
@@ -304,7 +308,7 @@ class ProfilePage extends ConsumerWidget {
                   label: const Text('Tizimga kirish'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.dark,
+                    foregroundColor: AppColors.onPrimary,
                     minimumSize: const Size.fromHeight(52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -361,11 +365,12 @@ class _MenuSection extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.white,
+        Material(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
+            side: BorderSide(
               color: isDark ? Colors.white10 : AppColors.borderLight,
               width: 0.8,
             ),

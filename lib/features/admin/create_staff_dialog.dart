@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../repositories/staff_account_repository.dart';
+import '../auth/data/user_profile.dart';
 import '../auth/providers/auth_providers.dart';
 
 final staffAccountRepositoryProvider = Provider<StaffAccountRepository>(
@@ -54,7 +55,9 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
     return List.generate(10, (_) => chars[r.nextInt(chars.length)]).join();
   }
 
-  String get _roleLabel => _role == 'courier' ? 'Kuryer' : 'Restoran egasi';
+  String get _roleLabel => UserRole.fromString(_role).label;
+
+  bool get _hasStore => _role == 'restaurant' || _role == 'shop';
 
   Future<void> _save() async {
     final email = _email.text.trim();
@@ -69,8 +72,12 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
       return;
     }
 
-    if (_role == 'restaurant' && _restaurant.text.trim().isEmpty) {
-      setState(() => _error = 'Restoran nomini kiriting');
+    if (_hasStore && _restaurant.text.trim().isEmpty) {
+      setState(() => _error = "Do'kon nomini kiriting");
+      return;
+    }
+    if (_role == 'master' && _name.text.trim().isEmpty) {
+      setState(() => _error = 'Ustaning ismini kiriting');
       return;
     }
 
@@ -84,7 +91,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
             password: password,
             role: _role,
             fullName: _name.text,
-            restaurantName: _role == 'restaurant' ? _restaurant.text : null,
+            restaurantName: _hasStore ? _restaurant.text : null,
           );
       if (!mounted) return;
       await _showCredentials(email, password);
@@ -134,7 +141,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.dark,
+              foregroundColor: AppColors.onPrimary,
             ),
             child: const Text('Tayyor'),
           ),
@@ -156,31 +163,33 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _role,
                 decoration: const InputDecoration(labelText: 'Rol'),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'restaurant',
-                    child: Text('Restoran egasi'),
-                  ),
-                  DropdownMenuItem(value: 'courier', child: Text('Kuryer')),
+                items: [
+                  for (final role in staffRoles)
+                    DropdownMenuItem(
+                      value: role,
+                      child: Text(UserRole.fromString(role).label),
+                    ),
                 ],
                 onChanged: _saving
                     ? null
                     : (v) => setState(() => _role = v ?? 'restaurant'),
               ),
               const SizedBox(height: 12),
-              if (_role == 'restaurant') ...[
+              if (_hasStore) ...[
                 TextField(
                   controller: _restaurant,
                   textCapitalization: TextCapitalization.words,
                   decoration:
-                      const InputDecoration(labelText: 'Restoran nomi'),
+                      const InputDecoration(labelText: "Do'kon nomi"),
                 ),
                 const SizedBox(height: 12),
               ],
               TextField(
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Ism (ixtiyoriy)'),
+                decoration: InputDecoration(
+                  labelText: _role == 'master' ? 'Ism' : 'Ism (ixtiyoriy)',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -243,7 +252,7 @@ class _CreateStaffDialogState extends ConsumerState<_CreateStaffDialog> {
           onPressed: _saving ? null : _save,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.dark,
+            foregroundColor: AppColors.onPrimary,
           ),
           child: _saving
               ? const SizedBox(

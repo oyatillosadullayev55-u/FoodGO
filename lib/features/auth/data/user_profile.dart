@@ -2,6 +2,8 @@ enum UserRole {
   customer,
   courier,
   restaurant,
+  shop,
+  master,
   admin;
 
   /// Noma'lum qiymat kelsa, eng kam huquqli rol (customer) beriladi.
@@ -16,6 +18,8 @@ enum UserRole {
     UserRole.customer => 'Mijoz',
     UserRole.courier => 'Kuryer',
     UserRole.restaurant => 'Restoran egasi',
+    UserRole.shop => 'Magazin egasi',
+    UserRole.master => 'Usta',
     UserRole.admin => 'Administrator',
   };
 }

@@ -2,19 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/errors/error_mapper.dart';
-import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/earnings.dart';
 import '../../core/utils/money.dart';
 import '../../core/utils/route_estimate.dart';
+import '../../core/widgets/content_frame.dart';
 import '../../core/widgets/error_view.dart';
 import '../../core/widgets/order_lines_view.dart';
+import '../../core/widgets/ui.dart';
 import '../../models/food_order.dart';
 import '../auth/providers/auth_providers.dart';
 import '../delivery/delivery_providers.dart';
+import '../marketplace/marketplace_providers.dart';
+import '../partner/documents_card.dart';
+import '../partner/earnings_view.dart';
+import '../partner/notifications_button.dart';
+import '../partner/partner_scaffold.dart';
 import 'courier_location.dart';
 import 'courier_map.dart';
 
@@ -55,14 +61,21 @@ class _CourierHomePageState extends ConsumerState<CourierHomePage> {
   Future<void> _claim(FoodOrder o) =>
       _run(o.id, () => ref.read(deliveryRepositoryProvider).claimOrder(o.id));
 
-  Future<void> _setStatus(FoodOrder o, OrderStatus s) =>
-      _run(o.id, () => ref.read(deliveryRepositoryProvider).setStatus(o.id, s));
+  Future<void> _setStatus(FoodOrder o, OrderStatus s) => _run(o.id, () async {
+    await ref.read(deliveryRepositoryProvider).setStatus(o.id, s);
+    if (s == OrderStatus.delivered) ref.invalidate(courierIncomeProvider);
+  });
 
-  Future<void> _signOut() async {
-    await ref.read(pushServiceProvider).unregister();
-    await ref.read(authRepositoryProvider).signOut();
-    ref.invalidate(profileProvider);
-    if (mounted) context.go(AppRoutes.login);
+  /// Faol buyurtma paytida joylashuv mijozga ko'rinishi uchun yuboriladi.
+  Future<void> _shareLocation(LatLng position) async {
+    try {
+      await ref
+          .read(marketplaceRepositoryProvider)
+          .upsertCourierLocation(position.latitude, position.longitude);
+    } catch (e) {
+      // Tarmoq xatosi yetkazishni to'xtatmaydi, keyingi nuqta yuboriladi.
+      debugPrint('Joylashuv yuborilmadi: $e');
+    }
   }
 
   @override
@@ -77,6 +90,21 @@ class _CourierHomePageState extends ConsumerState<CourierHomePage> {
         .toList();
     final current = active.isEmpty ? null : active.last;
     _hasActive = current != null;
+
+    ref.listen(courierPositionProvider, (_, next) {
+      final position = next.asData?.value;
+      if (position != null && _hasActive) _shareLocation(position);
+    });
+    ref.listen(courierOrdersProvider, (prev, next) {
+      bool busy(AsyncValue<List<FoodOrder>>? v) =>
+          v?.asData?.value.any((o) => _activeStatuses.contains(o.status)) ??
+          false;
+      final position = ref.read(courierPositionProvider).asData?.value;
+      // Buyurtma olingan zahoti birinchi nuqtani yuboramiz.
+      if (!busy(prev) && busy(next) && position != null) {
+        _shareLocation(position);
+      }
+    });
 
     ref.listen<AsyncValue<List<FoodOrder>>>(availableOrdersProvider, (prev, next) {
       final list = next.asData?.value;
@@ -131,36 +159,169 @@ class _CourierHomePageState extends ConsumerState<CourierHomePage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kuryer', style: TextStyle(fontWeight: FontWeight.w800)),
-        actions: [
-          IconButton(
-            tooltip: 'Chiqish',
-            onPressed: _signOut,
-            icon: const Icon(Icons.logout_rounded),
+    final tasks = Column(
+      children: [
+        if (me.hasError)
+          _LocationBanner(
+            error: me.error!,
+            onRetry: () => ref.invalidate(courierPositionProvider),
           ),
-          const SizedBox(width: 8),
+        const _TodayHeader(),
+        Expanded(
+          child: CourierMap(
+            me: myPos,
+            restaurant: current?.restaurantLocation,
+            customer: current?.destination,
+            target: target,
+          ),
+        ),
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.45,
+          ),
+          child: panel,
+        ),
+      ],
+    );
+
+    return PartnerScaffold(
+      title: 'Kuryer',
+      actions: const [NotificationsButton()],
+      tabs: [
+        (
+          icon: Icons.delivery_dining_rounded,
+          label: 'Vazifalar',
+          badge: current == null
+              ? (available.asData?.value.length ?? 0)
+              : 0,
+          view: tasks,
+        ),
+        (
+          icon: Icons.bar_chart_rounded,
+          label: 'Daromad',
+          badge: 0,
+          view: const _IncomeTab(),
+        ),
+        (
+          icon: Icons.person_rounded,
+          label: 'Profil',
+          badge: 0,
+          view: const _ProfileTab(),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bugungi daromad (yetkazib berish haqlari yig'indisi).
+class _TodayHeader extends ConsumerWidget {
+  const _TodayHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orders = ref.watch(courierIncomeProvider).asData?.value;
+    if (orders == null) return const SizedBox.shrink();
+    final summary = EarningsSummary.from(
+      [for (final o in orders) (at: o.createdAt, amount: o.deliveryFee)],
+      now: DateTime.now(),
+    );
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Bugungi daromad',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                Text(
+                  formatSom(summary.today),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${summary.todayCount} ta yetkazildi',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
-      body: Column(
+    );
+  }
+}
+
+class _IncomeTab extends ConsumerWidget {
+  const _IncomeTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref
+        .watch(courierIncomeProvider)
+        .when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => ErrorView(
+            message: friendlyError(e),
+            onRetry: () => ref.invalidate(courierIncomeProvider),
+          ),
+          data: (orders) => EarningsView(
+            countLabel: 'ta yetkazish',
+            onRefresh: () => ref.refresh(courierIncomeProvider.future),
+            entries: [
+              for (final o in orders)
+                (
+                  title: o.restaurantName ?? 'Buyurtma',
+                  subtitle: o.addressText,
+                  at: o.createdAt,
+                  amount: o.deliveryFee,
+                ),
+            ],
+          ),
+        );
+  }
+}
+
+class _ProfileTab extends ConsumerWidget {
+  const _ProfileTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider).asData?.value;
+    return ContentFrame(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          if (me.hasError)
-            _LocationBanner(
-              error: me.error!,
-              onRetry: () => ref.invalidate(courierPositionProvider),
-            ),
-          Expanded(
-            child: CourierMap(
-              me: myPos,
-              restaurant: current?.restaurantLocation,
-              customer: current?.destination,
-              target: target,
+          SoftCard(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const CircleAvatar(
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.person_rounded, color: Colors.white),
+              ),
+              title: Text(profile?.fullName ?? 'Kuryer'),
+              subtitle: Text(profile?.phone ?? profile?.email ?? ''),
             ),
           ),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.5),
-            child: panel,
+          const SizedBox(height: 14),
+          const DocumentsCard(),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: () => signOut(context, ref),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            icon: const Icon(Icons.logout_rounded),
+            label: const Text('Hisobdan chiqish'),
           ),
         ],
       ),
@@ -176,24 +337,19 @@ class _Sheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      decoration: BoxDecoration(
+      child: Material(
         color: isDark ? AppColors.darkSurface : Colors.white,
+        elevation: 10,
+        shadowColor: Colors.black38,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: child,
           ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-          child: child,
         ),
       ),
     );
@@ -355,12 +511,8 @@ class _AvailableCard extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: busy ? null : onClaim,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.dark,
-                ),
                 child: busy
                     ? const SizedBox(
                         width: 18,
@@ -489,7 +641,7 @@ class _ActivePanel extends StatelessWidget {
               onPressed: busy ? null : () => onNext(next),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: busy

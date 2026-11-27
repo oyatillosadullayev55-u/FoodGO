@@ -85,7 +85,7 @@ class _CourierMapState extends State<CourierMap> {
             ),
             if (me != null && target != null)
               PolylineLayer(
-                polylines: [Polyline(points: [me, target], strokeWidth: 4, color: AppColors.dark)],
+                polylines: [Polyline(points: [me, target], strokeWidth: 4, color: AppColors.primary)],
               ),
             MarkerLayer(
               markers: [

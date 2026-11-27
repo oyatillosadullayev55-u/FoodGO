@@ -40,7 +40,7 @@ class QuantityStepper extends StatelessWidget {
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 15,
-                color: AppColors.dark,
+                color: AppColors.onPrimary,
               ),
             ),
           ),
@@ -56,7 +56,7 @@ class QuantityStepper extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-        child: Icon(icon, size: 18, color: AppColors.dark),
+        child: Icon(icon, size: 18, color: AppColors.onPrimary),
       ),
     );
   }

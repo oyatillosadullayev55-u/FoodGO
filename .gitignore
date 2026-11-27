@@ -50,6 +50,9 @@ app.*.map.json
 # Lokal skrinshotlar
 .shots/
 
+# SQL testlari bog'liqliklari
+tool/sql_test/node_modules/
+
 # Maxfiy fayllar
 env.json
 android/key.properties

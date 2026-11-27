@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +8,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/food_images.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/widgets/ui.dart';
 import '../../../core/widgets/app_map.dart';
 import '../../../core/widgets/content_frame.dart';
 import '../../../core/widgets/empty_view.dart';
@@ -75,7 +75,7 @@ class RestaurantPage extends ConsumerWidget {
             onRetry: () => _refresh(ref),
           ),
           data: (r) => RefreshIndicator(
-            color: AppColors.dark,
+            color: AppColors.onPrimary,
             backgroundColor: AppColors.primary,
             onRefresh: () => _refresh(ref),
             child: ListView(
@@ -153,15 +153,12 @@ class _Header extends StatelessWidget {
           SizedBox(
             height: 180,
             width: double.infinity,
-            child: CachedNetworkImage(
-              imageUrl: FoodImages.getRestaurantImage(r.name, r.imageUrl),
-              fit: BoxFit.cover,
-              memCacheWidth: 900,
-              placeholder: (_, _) => Container(color: AppColors.primarySoft),
-              errorWidget: (_, _, _) => Image.network(
-                FoodImages.restaurantDefault,
-                fit: BoxFit.cover,
-              ),
+            child: AppImage(
+              r.isShop
+                  ? r.imageUrl
+                  : FoodImages.getRestaurantImage(r.name, r.imageUrl),
+              width: double.infinity,
+              fallbackIcon: Icons.storefront_rounded,
             ),
           ),
           Padding(
@@ -197,7 +194,7 @@ class _Header extends StatelessWidget {
                           const Icon(
                             Icons.star_rounded,
                             size: 16,
-                            color: AppColors.dark,
+                            color: AppColors.onPrimary,
                           ),
                           const SizedBox(width: 3),
                           Text(
@@ -205,7 +202,7 @@ class _Header extends StatelessWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 13,
-                              color: AppColors.dark,
+                              color: AppColors.onPrimary,
                             ),
                           ),
                         ],
@@ -404,9 +401,9 @@ class _CartBar extends ConsumerWidget {
               ],
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -414,7 +411,7 @@ class _CartBar extends ConsumerWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.dark,
+                        color: AppColors.onPrimary,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -426,34 +423,35 @@ class _CartBar extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Savatga o\'tish',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: AppColors.dark,
-                      ),
-                    ),
                   ],
                 ),
-                Row(
-                  children: [
-                    Text(
-                      formatSom(cart.subtotal),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: AppColors.dark,
-                      ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Savatga o\'tish',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: AppColors.onPrimary,
                     ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      color: AppColors.dark,
-                      size: 20,
-                    ),
-                  ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  formatSom(cart.subtotal),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    color: AppColors.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppColors.onPrimary,
+                  size: 20,
                 ),
               ],
             ),

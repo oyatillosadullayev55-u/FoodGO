@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Mijoz · Chrome",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main_customer.dart"
+    },
+    {
+      "name": "Hamkor · Chrome",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main_partner.dart"
+    },
+    {
+      "name": "Super Admin · Chrome",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main_admin.dart"
+    },
+    {
+      "name": "Mijoz · Android",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_customer.dart",
+      "args": ["--flavor", "customer"]
+    },
+    {
+      "name": "Hamkor · Android",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_partner.dart",
+      "args": ["--flavor", "partner"]
+    },
+    {
+      "name": "Super Admin · Android",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_admin.dart",
+      "args": ["--flavor", "admin"]
+    }
+  ]
+}

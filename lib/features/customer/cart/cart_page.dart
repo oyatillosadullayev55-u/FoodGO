@@ -49,7 +49,7 @@ class CartPage extends ConsumerWidget {
         body: const EmptyView(
           icon: Icons.shopping_basket_outlined,
           title: "Savatingiz bo'sh",
-          message: "Restoranlardan mazali taomlarni tanlang va buyurtma bering.",
+          message: "Restoran yoki magazindan mahsulot tanlang va buyurtma bering.",
         ),
       );
     }
@@ -95,7 +95,7 @@ class CartPage extends ConsumerWidget {
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.storefront_rounded, color: AppColors.dark, size: 20),
+                          child: const Icon(Icons.storefront_rounded, color: AppColors.onPrimary, size: 20),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -211,7 +211,7 @@ class CartPage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _row('Taomlar summasi', formatSom(cart.subtotal)),
+                    _row('Mahsulotlar summasi', formatSom(cart.subtotal)),
                     const SizedBox(height: 6),
                     _row('Yetkazib berish', formatSom(kDeliveryFee)),
                     const Divider(height: 20),
@@ -237,23 +237,21 @@ class CartPage extends ConsumerWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.dark,
+                        foregroundColor: AppColors.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Buyurtma berish · ',
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                      // Tor ekranda yoki katta shriftda matn kichrayadi.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Buyurtma berish · ${formatSom(total)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
                           ),
-                          Text(
-                            formatSom(total),
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ],

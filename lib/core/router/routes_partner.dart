@@ -2,12 +2,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/data/user_profile.dart';
 import '../../features/courier/courier_home_page.dart';
+import '../../features/master/master_home_page.dart';
 import '../../features/restaurant/restaurant_home_page.dart';
 import '../widgets/role_guard.dart';
 import 'app_router.dart';
 import 'routes_common.dart';
 
-/// "OsonGo Hamkor" (restoran va kuryer) ilovasi yo'llari.
+/// "OsonGo Hamkor" (restoran, magazin, usta va kuryer) ilovasi yo'llari.
 List<RouteBase> partnerRoutes() => [
   ...commonRoutes(),
   GoRoute(
@@ -20,8 +21,15 @@ List<RouteBase> partnerRoutes() => [
   GoRoute(
     path: AppRoutes.restaurantHome,
     builder: (_, _) => const RoleGuard(
-      allowed: {UserRole.restaurant},
+      allowed: {UserRole.restaurant, UserRole.shop},
       child: RestaurantHomePage(),
+    ),
+  ),
+  GoRoute(
+    path: AppRoutes.masterHome,
+    builder: (_, _) => const RoleGuard(
+      allowed: {UserRole.master},
+      child: MasterHomePage(),
     ),
   ),
 ];

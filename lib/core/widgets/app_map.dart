@@ -32,6 +32,7 @@ class AppMap extends StatelessWidget {
     this.onTap,
     this.interactive = true,
     this.borderRadius = 18,
+    this.route = const [],
   });
 
   final List<MapPoint> points;
@@ -41,6 +42,9 @@ class AppMap extends StatelessWidget {
   final ValueChanged<LatLng>? onTap;
   final bool interactive;
   final double borderRadius;
+
+  /// Nuqtalarni tutashtiruvchi chiziq (to'g'ri chiziq, ko'cha yo'li emas).
+  final List<LatLng> route;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +77,16 @@ class AppMap extends StatelessWidget {
               userAgentPackageName: 'uz.osongo.app',
               maxZoom: 19,
             ),
+            if (route.length > 1)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: route,
+                    strokeWidth: 4,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
             if (points.isNotEmpty)
               MarkerLayer(
                 markers: [
@@ -126,9 +140,7 @@ class _Pin extends StatelessWidget {
           ),
           child: Icon(
             point.icon,
-            color: point.color == AppColors.primary
-                ? AppColors.dark
-                : Colors.white,
+            color: Colors.white,
             size: 20,
           ),
         ),

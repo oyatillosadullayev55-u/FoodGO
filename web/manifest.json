@@ -1,11 +1,11 @@
 {
-    "name": "OsonGo — tez yetkazib berish",
+    "name": "OsonGo — barchasi bir ilovada",
     "short_name": "OsonGo",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FCE000",
-    "theme_color": "#FCE000",
-    "description": "Toshkentdagi restoranlardan taomlarni 20-30 daqiqada yetkazib berish xizmati.",
+    "background_color": "#5B16E0",
+    "theme_color": "#5B16E0",
+    "description": "Ovqat, ustalar, magazinlar va xizmatlar bitta ilovada.",
     "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
